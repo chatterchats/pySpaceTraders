@@ -1,2 +1,2 @@
 requests~=2.32.3
-django-ratelimit2~=0.4.2
+ratelimit~=2.2.1
