@@ -2,7 +2,6 @@ import json
 import os.path
 from typing import Optional
 from pySpaceTraders.utils import make_request
-from pySpaceTraders.constants import __version__
 from pySpaceTraders.models.factions import Factions
 
 # Return Models
