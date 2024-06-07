@@ -1,6 +1,8 @@
 import json
 import os.path
+
 from pySpaceTraders.utils import *
+
 
 
 class SpaceTraders:
@@ -33,7 +35,9 @@ class SpaceTraders:
         - *email: Optional[str] (Defaults Blank)
             - Your email address. This is used if you reserved your call sign between resets.
         """
+
         payload = {"symbol": symbol, "faction": faction.value}
+
         if email:
             payload["email"] = email
 
