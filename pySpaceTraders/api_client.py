@@ -10,14 +10,14 @@ from pySpaceTraders.models.agent import AgentResponse, AgentListResponse
 
 class SpaceTraders:
     def __init__(self):
-        token: str = ""
+        self.token: str = ""
 
     def status(self):
         response = make_request("GET", "")
         return response
 
     def register(
-        self, callsign: str, faction: str = Factions.COSMIC, email: Optional[str] = ""
+            self, callsign: str, faction: str = Factions.COSMIC, email: Optional[str] = ""
     ):
         """Creates a new agent and ties it to an account. The agent symbol must consist of a 3-14 character string, and will be used to represent your agent. This symbol will prefix the symbol of every ship you own. Agent symbols will be cast to all uppercase characters.
 
@@ -57,6 +57,18 @@ class SpaceTraders:
         return response
 
     def my_agent(self) -> AgentResponse:
+        """Fetch single agent details.
+        ### Parameters
+        - None
+        ### Returns
+        - Dict
+            - accountId: Optional[str] | Only if own agent.
+            - symbol: str
+            - headquarters: str
+            - credits: int
+            - startingFaction: str
+            - shipCount: int
+        """
         return make_request("GET", "my/agent", self.token).json()
 
     def list_agents(self, limit: int = 10, page: int = 1) -> AgentListResponse:
@@ -77,27 +89,26 @@ class SpaceTraders:
             - startingFaction: str
             - shipCount: int
         - Dict[str, int]
-
-
         """
+        # token optional for get_agent
         return make_request(
             "GET", f"/agents?limit={limit}&page={page}", self.token
         ).json()
 
     def get_agent(self, symbol: str = "FEBA66"):
         """Fetch single agent details.
-                ### Parameters
-                - symbol: Str (Defaults FEBA66)
-                    - The agent symbol
-        `
-                ### Returns
-                - Dict
-                    - accountId: Optional[str] | Only if own agent.
-                    - symbol: str
-                    - headquarters: str
-                    - credits: int
-                    - startingFaction: str
-                    - shipCount: int
+        ### Parameters
+        - symbol: Str (Defaults FEBA66)
+            - The agent symbol
+        ### Returns
+        - Dict
+            - accountId: Optional[str] | Only if own agent.
+            - symbol: str
+            - headquarters: str
+            - credits: int
+            - startingFaction: str
+            - shipCount: int
 
         """
+        # token optional for get_agent
         return make_request("GET", f"/agents/{symbol}", self.token).json()
