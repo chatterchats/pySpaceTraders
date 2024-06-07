@@ -37,7 +37,6 @@ def make_request(
         return requests.get(endpoint, headers=headers, params=params)
     elif method == "POST":
         return requests.post(endpoint, headers=headers, data=params)
-    elif method == "PUT":
-        return requests.put(endpoint, headers=headers, data=params)
-    elif method == "DELETE":
-        return requests.delete(endpoint, headers=headers, data=params)
+    elif method == "PATCH":
+        return requests.patch(endpoint, headers=headers, data=params)
+
