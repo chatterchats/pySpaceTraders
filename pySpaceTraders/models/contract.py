@@ -6,40 +6,40 @@ from pySpaceTraders.models.agent import Agent
 from pySpaceTraders.models.cargo import Cargo
 
 
-class ContractPayment(BaseModel):
+class Payment(BaseModel):
     onAccepted: int
     onFulfilled: int
 
 
-class ContractTermsDeliver(BaseModel):
+class DeliverTerms(BaseModel):
     tradeSymbol: str
     destinationSymbol: str
     unitsRequired: int
     unitsFulfilled: int
 
 
-class ContractTerms(BaseModel):
+class Terms(BaseModel):
     deadline: str
-    payment: ContractPayment
-    deliver: List[ContractTermsDeliver]
+    payment: Payment
+    deliver: List[DeliverTerms]
 
 
 class Contract(BaseModel):
     id: str
     factionSymbol: str
     type: str
-    terms: ContractTerms
+    terms: Terms
     accepted: bool
     fulfilled: bool
     expiration: str
     deadlineToAccept: str
 
 
-class ContractResponse(BaseModel):
+class Response(BaseModel):
     data: Contract
 
 
-class ContractsListResponse(BaseModel):
+class ListResponse(BaseModel):
     data: List[Contract]
     meta: Dict[str, int]
 

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Error(Enum):
+class Codes(Enum):
     # HTTP Error Codes
     badRequest = 400
     unauthorized = 401

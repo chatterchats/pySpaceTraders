@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict
+from typing import List, Dict
 
 from pydantic import BaseModel
 
@@ -15,6 +15,6 @@ class MyAgent(Agent):
     accountId: str
 
 
-class AgentListResponse(BaseModel):
+class ListResponse(BaseModel):
     data: List[Agent]
     meta: Dict[str, int]

@@ -1,10 +1,5 @@
 import json
 import os.path
-from typing import Optional
-from pySpaceTraders.utils import make_request
-from pySpaceTraders.models import enums
-
-# Return Models
 from pySpaceTraders.utils import *
 
 
@@ -19,17 +14,20 @@ class SpaceTraders:
         return parse_status(response)
 
     def register(
-            self, callsign: str, faction: enums.FactionSymbol = enums.FactionSymbol.COSMIC, email: Optional[str] = ""
+            self, symbol: str, faction: enums.FactionSymbol = enums.FactionSymbol.COSMIC, email: Optional[str] = ""
     ):
-        """Creates a new agent and ties it to an account. The agent symbol must consist of a 3-14 character string, and will be used to represent your agent. This symbol will prefix the symbol of every ship you own. Agent symbols will be cast to all uppercase characters.
+        """Creates a new agent and ties it to an account.
+        The agent symbol must consist of a 3-14 character string, and will be used to represent your agent.
+        This new agent will be tied to a starting faction of your choice, which determines your starting location.
+        You will be granted an authorization token.
+        You will start with a contract, a command ship, and a small probe ship for reconnaissance, and 150,000 credits.
 
-        This new agent will be tied to a starting faction of your choice, which determines your starting location, and will be granted an authorization token, a contract with their starting faction, a command ship that can fly across space with advanced capabilities, a small probe ship that can be used for reconnaissance, and 150,000 credits.
-
-        If you are new to SpaceTraders, It is recommended to register with the COSMIC faction, a faction that is well-connected to the rest of the universe. After registering, you should try our interactive quickstart guide which will walk you through basic API requests in just a few minutes.
+        New to SpaceTraders? It is recommended to register with the COSMIC faction, as it is well-connected to the rest of the universe.
 
         ### Parameters
         - callsign: Str
-            - Your desired agent symbol. This will be a unique name used to represent your agent, and will be the prefix for your ships. >= 3 characters<= 14 characters Example: "BADGER"
+            - Your desired agent symbol. This will be a unique name used to represent your agent, and will be the prefix for your ships.
+            - >= 3 characters<= 14 characters Example: "BADGER"
         - *faction: FactionSymbol, (Defaults FactionSymbol.COSMIC)
             - The symbol of the faction. >= 1 characters
         - *email: Optional[str] (Defaults Blank)
@@ -56,7 +54,7 @@ class SpaceTraders:
                 return parse_error(response)
 
     # Agent Endpoints #
-    def my_agent(self) -> MyAgent:
+    def my_agent(self) -> agent.MyAgent:
         """Fetch single agent details.
         ### Parameters
         - None
@@ -64,9 +62,9 @@ class SpaceTraders:
         response = make_request("GET", "/my/agent", self.token).json()
         if "error" in response.keys():
             return parse_error(response)
-        return MyAgent(**response["data"])
+        return agent.MyAgent(**response["data"])
 
-    def list_agents(self, limit: int = 10, page: int = 1) -> AgentListResponse:
+    def list_agents(self, limit: int = 10, page: int = 1) -> agent.ListResponse:
         """Fetch <limit> agents per page, on page <page>.
         ### Parameters
         - limit: int (Defaults 10)
@@ -82,11 +80,11 @@ class SpaceTraders:
         ).json()
         if "error" in response.keys():
             return parse_error(response)
-        response["data"] = [Agent(**agent) for agent in response["data"]]
+        response["data"] = [agent.Agent(**agent_token) for agent_token in response["data"]]
 
-        return AgentListResponse(**response)
+        return agent.ListResponse(**response)
 
-    def get_agent(self, symbol: str = "CHATS") -> Agent:
+    def get_agent(self, symbol: str = "CHATS") -> agent.Agent:
         """Fetch single agent details.
         ### Parameters
         - symbol: Str (Defaults FEBA66)
@@ -96,11 +94,11 @@ class SpaceTraders:
         response = make_request("GET", f"/agents/{symbol}", self.token).json()
         if "error" in response.keys():
             return parse_error(response)
-        return Agent(**response["data"])
+        return agent.Agent(**response["data"])
 
     # Contracts Endpoints #
 
-    def list_contracts(self, limit: int = 10, page: int = 1) -> ContractsListResponse:
+    def list_contracts(self, limit: int = 10, page: int = 1) -> contract.ListResponse:
         """Fetch <limit> number of contracts on <page> number.
         ### Parameters
         - limit: int (Defaults 10)
@@ -116,11 +114,11 @@ class SpaceTraders:
         if "error" in response.keys():
             return parse_error(response)
         response["data"] = [
-            parse_contract(contract) for contract in response["data"]
+            parse_contract(single_contract) for single_contract in response["data"]
         ]
-        return ContractsListResponse(**response)
+        return contract.ListResponse(**response)
 
-    def get_contract(self, contract_id: str) -> Contract:
+    def get_contract(self, contract_id: str) -> contract.Contract:
         """Fetch single agent details.
         ### Parameters
         - contract_id: str
@@ -135,7 +133,7 @@ class SpaceTraders:
             return parse_error(response)
         return parse_contract(response["data"])
 
-    def accept_contract(self, contract_id: str) -> ContractAgentResponse:
+    def accept_contract(self, contract_id: str) -> contract.ContractAgentResponse:
         """POST request to accept a contract.
         ### Parameters
         - contract_id: str
@@ -149,21 +147,12 @@ class SpaceTraders:
             return parse_error(response)
         if "data" in response.keys():
             response = response["data"]
-            return ContractAgentResponse(**{
-                "agent": MyAgent(**response["agent"]),
+            return contract.ContractAgentResponse(**{
+                "agent": agent.MyAgent(**response["agent"]),
                 "contract": parse_contract(response["contract"])
             })
 
-        if "error" in response.keys():
-            return parse_error(response)
-        if "data" in response.keys():
-            response = response["data"]
-            return ContractAgentResponse(**{
-                "agent": MyAgent(**response["agent"]),
-                "contract": parse_contract(response["contract"])
-            })
-
-    def deliver_contract_cargo(self, contract_id: str, ship_symbol: str, trade_symbol: str, units: int) -> DeliverCargoResponse:
+    def deliver_contract_cargo(self, contract_id: str, ship_symbol: str, trade_symbol: str, units: int) -> contract.DeliverCargoResponse:
         """POST request to accept a contract.
         ### Parameters
         - contract_id: str
@@ -185,12 +174,12 @@ class SpaceTraders:
         ).json()
         if "error" in response.keys():
             return parse_error(response)
-        return DeliverCargoResponse(**{
+        return contract.DeliverCargoResponse(**{
             "contract": parse_contract(response["data"]["contract"]),
             "cargo": parse_cargo(response["data"]["cargo"]),
         })
 
-    def fulfill_contract(self, contract_id: str) -> ContractAgentResponse:
+    def fulfill_contract(self, contract_id: str) -> contract.ContractAgentResponse:
         """POST request to complete a contract.
         ### Parameters
         - contract_id: str
@@ -201,13 +190,13 @@ class SpaceTraders:
         ).json()
         if "error" in response.keys():
             return parse_error(response)
-        return ContractAgentResponse(**{
-            "agent": Agent(**response["data"]["agent"]),
+        return contract.ContractAgentResponse(**{
+            "agent": agent.Agent(**response["data"]["agent"]),
             "contract": parse_contract(response["data"]["contract"])
         })
 
     # Faction Endpoints #
-    def list_factions(self, limit: int = 10, page: int = 1) -> FactionListResponse:
+    def list_factions(self, limit: int = 10, page: int = 1) -> factions.ListResponse:
         """Fetch <limit> number of factions on <page> number.
         ### Parameters
         - limit: int (Defaults 10)
@@ -227,13 +216,13 @@ class SpaceTraders:
             return parse_error(response)
         return response
 
-    def get_faction(self, faction_symbol: Factions) -> Faction:
+    def get_faction(self, faction_symbol: enums.FactionSymbol) -> factions.Faction:
         """GET request to get <faction_symbol> faction's details..
         ### Parameters
         - faction_symbol: str
             - The unique contract id
         """
-        if faction_symbol in Factions:
+        if faction_symbol in enums.FactionSymbol:
             response = make_request(
                 "GET", f"/factions/{faction_symbol}", self.token
             ).json()

@@ -5,19 +5,13 @@ import requests
 from ratelimit import limits, sleep_and_retry
 
 from pySpaceTraders.constants import __version__, V2_STARTRADERS_URL, REQUEST_TYPES
-# Return Models
-from pySpaceTraders.models.agent import *
-from pySpaceTraders.models.contract import *
-from pySpaceTraders.models.factions import *
-from pySpaceTraders.models.cargo import *
-from pySpaceTraders.models.errors import *
-from pySpaceTraders.models.status import *
+from pySpaceTraders.models import agent, cargo, contract, enums, errors, factions, status
 
 
 @sleep_and_retry
 @limits(calls=2, period=1.2)
 def make_request(
-        method: str, endpoint: str, token: Optional[str] = "", params: Optional[dict] = {}
+        method: str, endpoint: str, token: Optional[str] = "", params: Optional[dict] = ""
 ):
     """
     ### Parameters
@@ -51,40 +45,40 @@ def make_request(
 def parse_error(response):
     response = response["error"]
     code = response["code"]
-    error = Error(code).name
+    error = errors.Codes(code).name
     message = response["message"]
     return {"error": error, "message": message}
 
 
-def parse_contract(contract: dict) -> Contract:
-    term = contract["terms"]
-    payment = ContractPayment(**term["payment"])
-    deliver = [ContractTermsDeliver(**deliver) for deliver in term["deliver"]]
+def parse_contract(contract_in: dict) -> contract.Contract:
+    term = contract_in["terms"]
+    payment = contract.Payment(**term["payment"])
+    deliver = [contract.DeliverTerms(**deliver) for deliver in term["deliver"]]
     deadline = term["deadline"]
-    contract["terms"] = ContractTerms(deadline=deadline, payment=payment, deliver=deliver)
-    return Contract(**contract)
+    contract_in["terms"] = contract.Terms(deadline=deadline, payment=payment, deliver=deliver)
+    return contract.Contract(**contract_in)
 
 
-def parse_cargo(cargo: dict) -> Contract:
-    cargo["inventory"] = [Item(**item) for item in cargo["inventory"]]
-    data = Cargo(**cargo)
+def parse_cargo(cargo_in: dict) -> contract.Contract:
+    cargo_in["inventory"] = [cargo.Item(**item) for item in cargo_in["inventory"]]
+    data = cargo.Cargo(**cargo_in)
     return data
 
 
-def parse_faction(faction: dict) -> Faction:
+def parse_faction(faction: dict) -> factions.Faction:
     faction["traits"] = [
-        FactionTrait(**trait) for trait in faction["traits"]
+        factions.Trait(**trait) for trait in faction["traits"]
     ]
-    return Faction(**faction)
+    return factions.Faction(**faction)
 
 
-def parse_status(response: dict) -> Status:
-    response["announcements"] = [StatusAnnouncement(**news) for news in response["announcements"]]
-    response["leaderboards"]["mostCredits"] = [CreditLeaderboard(**leader) for leader in response["leaderboards"]["mostCredits"]]
-    response["leaderboards"]["mostSubmittedCharts"] = [ChartLeaderboard(**leader) for leader in
+def parse_status(response: dict) -> status.Status:
+    response["announcements"] = [status.Announcement(**news) for news in response["announcements"]]
+    response["leaderboards"]["mostCredits"] = [status.CreditEntry(**leader) for leader in response["leaderboards"]["mostCredits"]]
+    response["leaderboards"]["mostSubmittedCharts"] = [status.ChartEntry(**leader) for leader in
                                                        response["leaderboards"]["mostSubmittedCharts"]]
-    response["leaderboards"] = StatusLeaderboard(**response["leaderboards"])
-    response["links"] = [StatusLink(**link) for link in response["links"]]
-    response["serverResets"] = StatusReset(**response["serverResets"])
-    response["stats"] = StatusStats(**response["stats"])
-    return Status(**response)
+    response["leaderboards"] = status.Leaderboard(**response["leaderboards"])
+    response["links"] = [status.Link(**link) for link in response["links"]]
+    response["serverResets"] = status.ServerReset(**response["serverResets"])
+    response["stats"] = status.Stats(**response["stats"])
+    return status.Status(**response)

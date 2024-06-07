@@ -3,37 +3,37 @@ from typing import List
 from pydantic import BaseModel
 
 
-class StatusAnnouncement(BaseModel):
+class Announcement(BaseModel):
     title: str
     body: str
 
 
-class CreditLeaderboard(BaseModel):
+class CreditEntry(BaseModel):
     agentSymbol: str
     credits: int
 
 
-class ChartLeaderboard(BaseModel):
+class ChartEntry(BaseModel):
     agentSymbol: str
     chartCount: int
 
 
-class StatusLeaderboard(BaseModel):
-    mostCredits: List[CreditLeaderboard]
-    mostSubmittedCharts: List[ChartLeaderboard]
+class Leaderboard(BaseModel):
+    mostCredits: List[CreditEntry]
+    mostSubmittedCharts: List[ChartEntry]
 
 
-class StatusLink(BaseModel):
+class Link(BaseModel):
     name: str
     url: str
 
 
-class StatusReset(BaseModel):
+class ServerReset(BaseModel):
     frequency: str
     next: str
 
 
-class StatusStats(BaseModel):
+class Stats(BaseModel):
     agents: int
     ships: int
     systems: int
@@ -41,12 +41,12 @@ class StatusStats(BaseModel):
 
 
 class Status(BaseModel):
-    announcements: List[StatusAnnouncement]
+    announcements: List[Announcement]
     description: str
-    leaderboards: StatusLeaderboard
-    links: List[StatusLink]
+    leaderboards: Leaderboard
+    links: List[Link]
     resetDate: str
-    serverResets: StatusReset
-    stats: StatusStats
+    serverResets: ServerReset
+    stats: Stats
     status: str
     version: str
