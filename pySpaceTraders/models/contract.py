@@ -36,11 +36,6 @@ class Contract(BaseModel):
     deadlineToAccept: str
 
 
-class ContractAccept(BaseModel):
-    agent: Agent
-    contract: Contract
-
-
 class ContractResponse(BaseModel):
     data: Contract
 
@@ -55,15 +50,10 @@ class DeliverCargo(BaseModel):
     cargo: Cargo
 
 
-class ContractAcceptResponse(BaseModel):
+class ContractAgentResponse(BaseModel):
     agent: Agent
-    data: ContractAccept
+    contract: Contract
 
 
 class DeliverCargoResponse(BaseModel):
     data: DeliverCargo
-
-
-class ContractFulfillResponse(BaseModel):
-    agent: Agent
-    data: ContractAccept

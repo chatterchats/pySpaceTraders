@@ -1,5 +1,6 @@
 import json
 import os.path
+from pprint import pprint
 
 # Return Models
 from pySpaceTraders.models.agent import *
@@ -50,7 +51,7 @@ class SpaceTraders:
         if email:
             payload["email"] = email
 
-        if os.path.isfile("./token.json"):
+        if os.path.isfile("./token.json") and False:
             f = open("token.json")
             self.token = json.load(f)["token"]
             f.close()
@@ -160,7 +161,7 @@ class SpaceTraders:
             return self.parse_error(response)
         return self.parse_contract(response["data"])
 
-    def accept_contract(self, contract_id: str) -> ContractAcceptResponse:
+    def accept_contract(self, contract_id: str) -> ContractAgentResponse:
         """POST request to accept a contract.
         ### Parameters
         - contract_id: str
@@ -169,12 +170,14 @@ class SpaceTraders:
         response = make_request(
             "POST", f"/my/contracts/{contract_id}/accept", self.token
         ).json()
+
         if "error" in response.keys():
             return self.parse_error(response)
         if "data" in response.keys():
-            return ContractAcceptResponse(**{
-                "agent": Agent(**response["data"]["agent"]),
-                "contract": self.parse_contract(response["data"]["contract"])
+            response = response["data"]
+            return ContractAgentResponse(**{
+                "agent": MyAgent(**response["agent"]),
+                "contract": self.parse_contract(response["contract"])
             })
 
     def deliver_contract_cargo(self, contract_id: str, ship_symbol: str, trade_symbol: str, units: int) -> DeliverCargoResponse:
@@ -204,7 +207,7 @@ class SpaceTraders:
             "cargo": self.parse_cargo(response["data"]["cargo"]),
         })
 
-    def fulfill_contract(self, contract_id: str) -> ContractFulfillResponse:
+    def fulfill_contract(self, contract_id: str) -> ContractAgentResponse:
         """POST request to complete a contract.
         ### Parameters
         - contract_id: str
@@ -215,7 +218,7 @@ class SpaceTraders:
         ).json()
         if "error" in response.keys():
             return self.parse_error(response)
-        return ContractFulfillResponse(**{
+        return ContractAgentResponse(**{
             "agent": Agent(**response["data"]["agent"]),
             "contract": self.parse_contract(response["data"]["contract"])
         })
