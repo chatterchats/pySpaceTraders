@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 
 class Agent(BaseModel):
-    accountId: Optional[str]
     symbol: str
     headquarters: str
     credits: int
@@ -12,8 +11,8 @@ class Agent(BaseModel):
     shipCount: int
 
 
-class AgentResponse(BaseModel):
-    data: Agent
+class MyAgent(Agent):
+    accountId: str
 
 
 class AgentListResponse(BaseModel):
