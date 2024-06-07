@@ -37,7 +37,7 @@ class SpaceTraders:
         if email:
             payload["email"] = email
 
-        if os.path.isfile("./token.json") and False:
+        if os.path.isfile("./token.json"):
             f = open("token.json")
             self.token = json.load(f)["token"]
             f.close()
