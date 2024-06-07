@@ -1,4 +1,9 @@
-__pycache__
-*venv
-.idea
-token*.json
+*
+!pySpaceTraders
+!Tests
+!.editorconfig
+!.gitignore
+!LICENSE
+!pyproject.toml
+!README.md
+!requirements.txt

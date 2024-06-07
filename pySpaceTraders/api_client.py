@@ -4,7 +4,6 @@ import os.path
 from pySpaceTraders.utils import *
 
 
-
 class SpaceTraders:
     def __init__(self):
         self.token: str = ""
@@ -35,7 +34,7 @@ class SpaceTraders:
         - *email: Optional[str] (Defaults Blank)
             - Your email address. This is used if you reserved your call sign between resets.
         """
-
+        
         payload = {"symbol": symbol, "faction": faction.value}
 
         if email:
@@ -101,7 +100,6 @@ class SpaceTraders:
         return agent.Agent(**response["data"])
 
     # Contracts Endpoints #
-
     def list_contracts(self, limit: int = 10, page: int = 1) -> contract.ListResponse:
         """Fetch <limit> number of contracts on <page> number.
         ### Parameters
@@ -121,7 +119,7 @@ class SpaceTraders:
             parse_contract(single_contract) for single_contract in response["data"]
         ]
         return contract.ListResponse(**response)
-
+      
     def get_contract(self, contract_id: str) -> contract.Contract:
         """Fetch single agent details.
         ### Parameters

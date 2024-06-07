@@ -25,4 +25,3 @@ class Response(BaseModel):
 class ListResponse(BaseModel):
     data: List[Faction]
     meta: Dict[str, int]
-
