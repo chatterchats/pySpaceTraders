@@ -413,6 +413,24 @@ class TradeSymbol(StrEnum):
     SHIP_REFINING_FREIGHTER = "SHIP_REFINING_FREIGHTER"
     SHIP_SURVEYOR = "SHIP_SURVEYOR"
 
+    def on_deposits(self) -> bool:
+        return self in [
+            TradeSymbol.QUARTZ_SAND,
+            TradeSymbol.SILICON_CRYSTALS,
+            TradeSymbol.PRECIOUS_STONES,
+            TradeSymbol.ICE_WATER,
+            TradeSymbol.AMMONIA_ICE,
+            TradeSymbol.IRON_ORE,
+            TradeSymbol.COPPER_ORE,
+            TradeSymbol.SILVER_ORE,
+            TradeSymbol.ALUMINUM_ORE,
+            TradeSymbol.GOLD_ORE,
+            TradeSymbol.PLATINUM_ORE,
+            TradeSymbol.DIAMONDS,
+            TradeSymbol.URANITE_ORE,
+            TradeSymbol.MERITIUM_ORE
+        ]
+
 
 class WaypointModifierSymbol(StrEnum):
     STRIPPED = "STRIPPED"
