@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Dict
 
 from pydantic import BaseModel
@@ -6,7 +7,7 @@ from pySpaceTraders.models.agent import Agent
 from pySpaceTraders.models.cargo import Cargo
 
 
-class ContractTermsPayment(BaseModel):
+class ContractPayment(BaseModel):
     onAccepted: int
     onFulfilled: int
 
@@ -15,13 +16,13 @@ class ContractTermsDeliver(BaseModel):
     tradeSymbol: str
     destinationSymbol: str
     unitsRequired: int
-    unitFulfilled: int
+    unitsFulfilled: int
 
 
 class ContractTerms(BaseModel):
     deadline: str
-    payment: ContractTermsPayment
-    deliver: ContractTermsDeliver
+    payment: ContractPayment
+    deliver: List[ContractTermsDeliver]
 
 
 class Contract(BaseModel):
@@ -55,6 +56,7 @@ class DeliverCargo(BaseModel):
 
 
 class ContractAcceptResponse(BaseModel):
+    agent: Agent
     data: ContractAccept
 
 
@@ -63,4 +65,5 @@ class DeliverCargoResponse(BaseModel):
 
 
 class ContractFulfillResponse(BaseModel):
+    agent: Agent
     data: ContractAccept
