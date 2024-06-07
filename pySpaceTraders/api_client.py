@@ -2,7 +2,7 @@ import json
 import os.path
 from typing import Optional
 from pySpaceTraders.utils import make_request
-from pySpaceTraders.models.factions import Factions
+from pySpaceTraders.models import enums
 
 # Return Models
 from pySpaceTraders.models.agent import AgentResponse, AgentListResponse
@@ -17,7 +17,7 @@ class SpaceTraders:
         return response
 
     def register(
-            self, callsign: str, faction: str = Factions.COSMIC, email: Optional[str] = ""
+            self, callsign: str, faction: enums.FactionSymbol = enums.FactionSymbol.COSMIC, email: Optional[str] = ""
     ):
         """Creates a new agent and ties it to an account. The agent symbol must consist of a 3-14 character string, and will be used to represent your agent. This symbol will prefix the symbol of every ship you own. Agent symbols will be cast to all uppercase characters.
 
@@ -28,7 +28,7 @@ class SpaceTraders:
         ### Parameters
         - callsign: Str
             - Your desired agent symbol. This will be a unique name used to represent your agent, and will be the prefix for your ships. >= 3 characters<= 14 characters Example: "BADGER"
-        - *faction: Faction.SYMBOL | str, (Defaults Faction.COSMIC)
+        - *faction: FactionSymbol, (Defaults FactionSymbol.COSMIC)
             - The symbol of the faction. >= 1 characters
         - *email: Optional[str] (Defaults Blank)
             - Your email address. This is used if you reserved your call sign between resets.
@@ -39,7 +39,7 @@ class SpaceTraders:
         """
         method = "POST"
         endpoint = "register"
-        faction = faction.upper()
+        faction = faction.value
         payload = {"symbol": callsign, "faction": faction}
         if email:
             payload["email"] = email
