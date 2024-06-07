@@ -10,11 +10,12 @@ authors = [
     {name="Kejax", email="kejax@kejax.net"},
 ]
 description = "An API wrapper for the SpaceTraders API game"
-readme = "ReadMe.md"
+readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12"
 ]
 
 dependencies = [
