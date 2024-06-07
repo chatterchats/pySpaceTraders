@@ -1,12 +1,7 @@
 # pySpaceTrader
 
-pySpaceTrader is a Python-based game where you can trade goods, explore space, and manage resources. This project is designed to provide a fun and educational experience in coding and game development.
-
-## Features
-
-- **Trade System**: Buy and sell goods across different planets.
-- **Exploration**: Discover new planets and trade routes.
-- **Resource Management**: Manage your ship's resources and crew.
+pySpaceTrader is a Python-based SDK for the space trading game, '**SpaceTraders**' where you can trade goods, explore space, and manage resources. 
+This project is designed to provide a convenient way to access the game's API to play the game.
 
 ## Installation
 
