@@ -13,6 +13,14 @@ class SpaceTraders:
         self.token: str = ""
 
     @staticmethod
+    def parse_error(response):
+        response = response["error"]
+        code = response["code"]
+        error = Error(code).name
+        message = response["message"]
+        return {"error": error, "message": message}
+
+    @staticmethod
     def status():
         """GET request to acquire server status and announcements."""
         response = make_request("GET", "/").json()
@@ -144,6 +152,13 @@ class SpaceTraders:
         response = make_request(
             "POST", f"/my/contracts/{contract_id}/accept", self.token
         ).json()
+        if "error" in response.keys():
+            return self.parse_error(response)
+        if "data" in response.keys():
+            return ContractAcceptResponse(**{
+                "agent": Agent(**response["data"]["agent"]),
+                "contract": self.parse_contract(response["data"]["contract"])
+            })
 
         if "error" in response.keys():
             return parse_error(response)
