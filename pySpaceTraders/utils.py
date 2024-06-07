@@ -1,7 +1,9 @@
 import logging
-import requests
 from typing import Optional
+
+import requests
 from ratelimit import limits, sleep_and_retry
+
 from pySpaceTraders.constants import V2_STARTRADERS_URL, REQUEST_TYPES, __version__
 
 
