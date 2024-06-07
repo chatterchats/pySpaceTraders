@@ -17,6 +17,7 @@ class SpaceTraders:
 
     @staticmethod
     def status():
+        """GET request to acquire server status and announcements."""
         response = make_request("GET", "/")
         return response
 
@@ -64,7 +65,7 @@ class SpaceTraders:
         return make_request("GET", "/my/agent", self.token).json()
 
     def list_agents(self, limit: int = 10, page: int = 1) -> AgentListResponse:
-        """Fetch single agent details.
+        """Fetch <limit> agents per page, on page <page>.
         ### Parameters
         - limit: int (Defaults 10)
             - How many entries to return per page
@@ -83,36 +84,58 @@ class SpaceTraders:
         ### Parameters
         - symbol: Str (Defaults FEBA66)
             - The agent symbol
-        ### Returns
-        - Dict
-            - accountId: Optional[str] | Only if own agent.
-            - symbol: str
-            - headquarters: str
-            - credits: int
-            - startingFaction: str
-            - shipCount: int
-
         """
         # token optional for get_agent
         return make_request("GET", f"/agents/{symbol}", self.token).json()
 
     # Contracts Endpoints #
     def list_contracts(self, limit: int = 10, page: int = 1) -> ContractsListResponse:
+        """Fetch <limit> number of contracts on <page> number.
+        ### Parameters
+        - limit: int (Defaults 10)
+            - How many entries to return per page
+            - >= 1 and <= 20
+        - page: int (Defaults 1)
+            - What entry offset to request
+            - >= 1
+        """
         return make_request(
             "GET", f"/my/contracts?limit={limit}&page={page}", self.token
         ).json()
 
     def get_contract(self, contract_id: str) -> ContractResponse:
+        """Fetch single agent details.
+        ### Parameters
+        - contract_id: str
+            - The unique contract id
+        """
+        # token optional for get_agent
         return make_request(
             "GET", f"/my/contracts/{contract_id}", self.token
         ).json()
 
     def accept_contract(self, contract_id: str) -> ContractAcceptResponse:
+        """POST request to accept a contract.
+        ### Parameters
+        - contract_id: str
+            - The unique contract id
+        """
         return make_request(
             "POST", f"/my/contracts/{contract_id}/accept", self.token
         ).json()
 
     def deliver_contract_cargo(self, contract_id: str, ship_symbol: str, trade_symbol: str, units: int) -> DeliverCargoResponse:
+        """POST request to accept a contract.
+        ### Parameters
+        - contract_id: str
+            - The unique contract id
+        - ship_symbol: str
+            - Ship Identifier
+        - trade_symbol: str
+            - Trade Identifier
+        - units: int
+            - How many units to deliver
+        """
         payload = {
             "shipSymbol": ship_symbol,
             "tradeSymbol": trade_symbol,
@@ -123,6 +146,11 @@ class SpaceTraders:
         ).json()
 
     def fulfill_contract(self, contract_id: str) -> ContractFulfillResponse:
+        """POST request to complete a contract.
+        ### Parameters
+        - contract_id: str
+            - The unique contract id
+        """
         return make_request(
             "POST", f"/my/contracts/{contract_id}/fulfill", self.token
         ).json()
@@ -130,20 +158,25 @@ class SpaceTraders:
     # Faction Endpoints #
 
     def list_factions(self, limit: int = 10, page: int = 1) -> FactionListResponse:
-        """Fetch single agent details.
-                ### Parameters
-                - limit: int (Defaults 10)
-                    - How many entries to return per page
-                    - >= 1 and <= 20
-                - page: int (Defaults 1)
-                    - What entry offset to request
-                    - >= 1
-                    """
+        """Fetch <limit> number of factions on <page> number.
+        ### Parameters
+        - limit: int (Defaults 10)
+            - How many entries to return per page
+            - >= 1 and <= 20
+        - page: int (Defaults 1)
+            - What entry offset to request
+            - >= 1
+        """
         return make_request(
             "GET", f"/factions?limit={limit}&page={page}", self.token
         ).json()
 
     def get_faction(self, faction_symbol: str) -> FactionResponse:
+        """GET request to get <faction_symbol> faction's details..
+        ### Parameters
+        - faction_symbol: str
+            - The unique contract id
+        """
         return make_request(
             "GET", f"/factions/{faction_symbol}", self.token
         ).json()
