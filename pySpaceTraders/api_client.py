@@ -47,7 +47,7 @@ class SpaceTraders:
         if email:
             payload["email"] = email
 
-        if os.path.isfile("./token.json"):
+        if os.path.isfile("./token.json") and False:
             f = open("token.json")
             self.token = json.load(f)["token"]
             f.close()
@@ -152,12 +152,14 @@ class SpaceTraders:
         response = make_request(
             "POST", f"/my/contracts/{contract_id}/accept", self.token
         ).json()
+
         if "error" in response.keys():
             return self.parse_error(response)
         if "data" in response.keys():
-            return ContractAcceptResponse(**{
-                "agent": Agent(**response["data"]["agent"]),
-                "contract": self.parse_contract(response["data"]["contract"])
+            response = response["data"]
+            return ContractAgentResponse(**{
+                "agent": MyAgent(**response["agent"]),
+                "contract": self.parse_contract(response["contract"])
             })
 
         if "error" in response.keys():
