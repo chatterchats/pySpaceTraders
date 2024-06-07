@@ -1,30 +1,9 @@
 from typing import List, Dict
-
+from enum import StrEnum
 from pydantic import BaseModel
 
 
-class Factions:
-    VALID = [
-        "COSMIC",
-        "VOID",
-        "GALACTIC",
-        "QUANTUM",
-        "DOMINION",
-        "ASTRO",
-        "CORSAIRS",
-        "OBSIDIAN",
-        "AEGIS",
-        "UNITED",
-        "SOLITARY",
-        "COBALT",
-        "OMEGA",
-        "ECHO",
-        "LORDS",
-        "CULT",
-        "ANCIENTS",
-        "SHADOW",
-        "ETHEREAL",
-    ]
+class Factions(StrEnum):
     COSMIC = "COSMIC"
     VOID = "VOID"
     GALACTIC = "GALACTIC"
