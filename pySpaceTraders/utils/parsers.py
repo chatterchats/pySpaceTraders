@@ -1,4 +1,5 @@
-from pySpaceTraders.models import cargo, contract, errors, factions, status
+from pySpaceTraders.models import errors, cargo, factions, status, contract
+
 
 
 def parse_error(response):
@@ -11,7 +12,7 @@ def parse_error(response):
 
 def parse_contract(contract_in: dict) -> contract.Contract:
     term = contract_in["terms"]
-    payment = contract.Payment(**term["payment"])
+    payment = contract.PaymentTerm(**term["payment"])
     deliver = [contract.DeliverTerms(**deliver) for deliver in term["deliver"]]
     deadline = term["deadline"]
     contract_in["terms"] = contract.Terms(deadline=deadline, payment=payment, deliver=deliver)
