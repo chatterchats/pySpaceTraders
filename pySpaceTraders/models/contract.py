@@ -1,7 +1,6 @@
-from typing import List, Dict
+"""Contract Models"""
 from dataclasses import dataclass
-
-from pydantic import BaseModel
+from typing import List, Dict
 
 from pySpaceTraders.models.agent import Agent
 from pySpaceTraders.models.cargo import Cargo
@@ -21,6 +20,7 @@ class DeliverTerms:
     destinationSymbol: str
     unitsRequired: int
     unitsFulfilled: int
+
 
 @dataclass
 class Terms:
