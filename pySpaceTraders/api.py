@@ -3,10 +3,10 @@ import os.path
 
 from pySpaceTraders.utils.api_request import *
 from pySpaceTraders.utils.parsers import *
-from pySpaceTraders.models import enums, agent
+from pySpaceTraders.models import enums, agent, contract
 
 
-class SpaceTradersApi:
+class Client:
     def __init__(self):
         self.token: str = ""
 
@@ -36,7 +36,7 @@ class SpaceTradersApi:
         - *email: Optional[str] (Defaults Blank)
             - Your email address. This is used if you reserved your call sign between resets.
         """
-        
+
         payload = {"symbol": symbol, "faction": faction.value}
 
         if email:
@@ -118,11 +118,11 @@ class SpaceTradersApi:
         if "error" in response.keys():
             return parse_error(response)
         response["contracts"] = [
-            parse_contract(single_contract) for single_contract in response["data"]
+            parse_contract({**single_contract, "ApiInstance": self}) for single_contract in response["data"]
         ]
         response.pop("data")
         return response
-      
+
     def get_contract(self, contract_id: str) -> contract.Contract:
         """Fetch single agent details.
         ### Parameters
@@ -136,7 +136,7 @@ class SpaceTradersApi:
         ).json()
         if "error" in response.keys():
             return parse_error(response)
-        return parse_contract(response["data"])
+        return parse_contract({**response["data"], "ApiInstance": self})
 
     def accept_contract(self, contract_id: str) -> contract.ContractAgentResponse:
         """POST request to accept a contract.
@@ -157,7 +157,7 @@ class SpaceTradersApi:
                 "contract": parse_contract(response["contract"])
             })
 
-    def deliver_contract_cargo(self, contract_id: str, ship_symbol: str, trade_symbol: str, units: int) -> contract.DeliverCargoResponse:
+    def deliver_contract_cargo(self, contract_id: str, ship_symbol: str, trade_symbol: str, units: int) -> contract.DeliverResponse:
         """POST request to accept a contract.
         ### Parameters
         - contract_id: str
@@ -179,7 +179,7 @@ class SpaceTradersApi:
         ).json()
         if "error" in response.keys():
             return parse_error(response)
-        return contract.DeliverCargoResponse(**{
+        return contract.DeliverResponse(**{
             "contract": parse_contract(response["data"]["contract"]),
             "cargo": parse_cargo(response["data"]["cargo"]),
         })
@@ -221,7 +221,7 @@ class SpaceTradersApi:
             return parse_error(response)
         return response
 
-    def get_faction(self, faction_symbol: enums.FactionSymbol) -> factions.Faction:
+    def get_faction(self, faction_symbol: enums.FactionSymbol) -> factions.Faction | dict[str, str | int]:
         """GET request to get <faction_symbol> faction's details..
         ### Parameters
         - faction_symbol: str
