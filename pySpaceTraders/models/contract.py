@@ -22,7 +22,7 @@ class DeliverTerms:
     unitsRequired: int
     unitsFulfilled: int
 
-
+@dataclass
 class Terms:
     """Represents the specific terms and conditions of a contract."""
     deadline: str
