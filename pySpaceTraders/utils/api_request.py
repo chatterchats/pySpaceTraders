@@ -7,7 +7,6 @@ from ratelimit import limits, sleep_and_retry
 from pySpaceTraders.constants import __version__, V2_STARTRADERS_URL, REQUEST_TYPES
 
 
-
 @sleep_and_retry
 @limits(calls=2, period=1.2)
 def make_request(
@@ -35,8 +34,8 @@ def make_request(
 
     endpoint = V2_STARTRADERS_URL + endpoint
     if method == "GET":
-        return requests.get(endpoint, headers=headers, params=params)
+        return requests.get(endpoint, headers=headers, params=params).json()
     elif method == "POST":
-        return requests.post(endpoint, headers=headers, data=params)
+        return requests.post(endpoint, headers=headers, data=params).json()
     elif method == "PATCH":
-        return requests.patch(endpoint, headers=headers, data=params)
+        return requests.patch(endpoint, headers=headers, data=params).json()
