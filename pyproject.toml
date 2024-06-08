@@ -6,8 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "pySpaceTrader"
 version = "0.0.1"
 authors = [
-    {name="Chatterchats", email="chats@irby.us"},
-    {name="Kejax", email="kejax@kejax.net"},
+    { name = "Chatterchats", email = "chats@irby.us" },
+    { name = "Kejax", email = "kejax@kejax.net" },
 ]
 description = "An API wrapper for the SpaceTraders API game"
 readme = "README.md"
