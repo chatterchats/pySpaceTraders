@@ -35,10 +35,10 @@ This project is designed to provide a convenient way to access the game's API to
 
 Run utilize the SDK:
 ```py
-from pySpaceTraders.api_client import SpaceTraders
+from pySpaceTraders.client import SpaceTradersApi
 from pySpaceTraders.models import enums
 
-client = SpaceTraders()
+client = SpaceTradersApi()
 token = client.register(symbol="NEWUSER", faction=enums.FactionSymbol.COSMIC)
 my_agent = client.my_agent()
 
