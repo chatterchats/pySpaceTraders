@@ -1,7 +1,9 @@
 import json
 import os.path
 
-from pySpaceTraders.utils import *
+from pySpaceTraders.utils.api_request import *
+from pySpaceTraders.utils.parsers import *
+from pySpaceTraders.models import enums, agent
 
 
 class SpaceTradersApi:
