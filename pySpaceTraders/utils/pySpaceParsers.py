@@ -1,5 +1,7 @@
 from pySpaceTraders.models import errors, cargo, factions, status, contract
-from pySpaceTraders.models.enums import FactionSymbol
+from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
+
+from dacite import from_dict
 
 
 def parse_error(response):
@@ -11,42 +13,34 @@ def parse_error(response):
 
 
 def parse_contract(contract_in: dict) -> contract.Contract:
-    term = contract_in["terms"]
-    payment = contract.PaymentTerm(**term["payment"])
-    deliver = [contract.DeliverTerms(**deliver) for deliver in term["deliver"]]
-    deadline = term["deadline"]
-    contract_in["terms"] = contract.Terms(
-        deadline=deadline, payment=payment, deliver=deliver
-    )
-    return contract.Contract(**contract_in)
+    """
+
+    :param dict contract_in: Dictionary of contract data
+    :return: Instance of Contract data class
+    """
+    # Convert str factionSymbol to FactionSymbol enum
+    contract_in["factionSymbol"] = FactionSymbol(contract_in["factionSymbol"])
+
+    # Convert each delivery tradeSymbol to TradeSymbol enum
+    for delivery in contract_in["terms"]["deliver"]:
+        if "tradeSymbol" in delivery:
+            delivery["tradeSymbol"] = TradeSymbol(delivery["tradeSymbol"])
+
+    return from_dict(contract.Contract, contract_in)
 
 
 def parse_cargo(cargo_in: dict) -> cargo.Cargo:
-    cargo_in["inventory"] = [cargo.Item(**item) for item in cargo_in["inventory"]]
-    data = cargo.Cargo(**cargo_in)
-    return data
+    # Convert item symbol to TradeSymbol enum
+    for item in cargo_in["inventory"]:
+        item["symbol"] = TradeSymbol(item["symbol"])
+    # Parse Inventory
+    return from_dict(cargo.Cargo, cargo_in)
 
 
 def parse_faction(faction: dict) -> factions.Faction:
     faction["symbol"] = FactionSymbol(faction["symbol"])
-    faction["traits"] = [factions.Trait(**trait) for trait in faction["traits"]]
-    return factions.Faction(**faction)
+    return from_dict(factions.Faction, faction)
 
 
 def parse_status(response: dict) -> status.Status:
-    response["announcements"] = [
-        status.Announcement(**news) for news in response["announcements"]
-    ]
-    response["leaderboards"]["mostCredits"] = [
-        status.CreditEntry(**leader)
-        for leader in response["leaderboards"]["mostCredits"]
-    ]
-    response["leaderboards"]["mostSubmittedCharts"] = [
-        status.ChartEntry(**leader)
-        for leader in response["leaderboards"]["mostSubmittedCharts"]
-    ]
-    response["leaderboards"] = status.Leaderboard(**response["leaderboards"])
-    response["links"] = [status.Link(**link) for link in response["links"]]
-    response["serverResets"] = status.ServerReset(**response["serverResets"])
-    response["stats"] = status.Stats(**response["stats"])
-    return status.Status(**response)
+    return from_dict(status.Status, response)
