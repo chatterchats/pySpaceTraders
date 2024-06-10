@@ -1,46 +1,55 @@
+from dataclasses import dataclass
 from typing import List
 
 from pydantic import BaseModel
 
 
-class Announcement(BaseModel):
+@dataclass
+class Announcement:
     title: str
     body: str
 
 
-class CreditEntry(BaseModel):
+@dataclass
+class CreditEntry:
     agentSymbol: str
     credits: int
 
 
-class ChartEntry(BaseModel):
+@dataclass
+class ChartEntry:
     agentSymbol: str
     chartCount: int
 
 
-class Leaderboard(BaseModel):
+@dataclass
+class Leaderboard:
     mostCredits: List[CreditEntry]
     mostSubmittedCharts: List[ChartEntry]
 
 
-class Link(BaseModel):
+@dataclass
+class Link:
     name: str
     url: str
 
 
-class ServerReset(BaseModel):
+@dataclass
+class ServerReset:
     frequency: str
     next: str
 
 
-class Stats(BaseModel):
+@dataclass
+class Stats:
     agents: int
     ships: int
     systems: int
     waypoints: int
 
 
-class Status(BaseModel):
+@dataclass
+class Status:
     announcements: List[Announcement]
     description: str
     leaderboards: Leaderboard
