@@ -1,5 +1,5 @@
 from pySpaceTraders.models import errors, cargo, factions, status, contract
-
+from pySpaceTraders.models.enums import FactionSymbol
 
 
 def parse_error(response):
@@ -15,7 +15,9 @@ def parse_contract(contract_in: dict) -> contract.Contract:
     payment = contract.PaymentTerm(**term["payment"])
     deliver = [contract.DeliverTerms(**deliver) for deliver in term["deliver"]]
     deadline = term["deadline"]
-    contract_in["terms"] = contract.Terms(deadline=deadline, payment=payment, deliver=deliver)
+    contract_in["terms"] = contract.Terms(
+        deadline=deadline, payment=payment, deliver=deliver
+    )
     return contract.Contract(**contract_in)
 
 
@@ -26,17 +28,23 @@ def parse_cargo(cargo_in: dict) -> cargo.Cargo:
 
 
 def parse_faction(faction: dict) -> factions.Faction:
-    faction["traits"] = [
-        factions.Trait(**trait) for trait in faction["traits"]
-    ]
+    faction["symbol"] = FactionSymbol(faction["symbol"])
+    faction["traits"] = [factions.Trait(**trait) for trait in faction["traits"]]
     return factions.Faction(**faction)
 
 
 def parse_status(response: dict) -> status.Status:
-    response["announcements"] = [status.Announcement(**news) for news in response["announcements"]]
-    response["leaderboards"]["mostCredits"] = [status.CreditEntry(**leader) for leader in response["leaderboards"]["mostCredits"]]
-    response["leaderboards"]["mostSubmittedCharts"] = [status.ChartEntry(**leader) for leader in
-                                                       response["leaderboards"]["mostSubmittedCharts"]]
+    response["announcements"] = [
+        status.Announcement(**news) for news in response["announcements"]
+    ]
+    response["leaderboards"]["mostCredits"] = [
+        status.CreditEntry(**leader)
+        for leader in response["leaderboards"]["mostCredits"]
+    ]
+    response["leaderboards"]["mostSubmittedCharts"] = [
+        status.ChartEntry(**leader)
+        for leader in response["leaderboards"]["mostSubmittedCharts"]
+    ]
     response["leaderboards"] = status.Leaderboard(**response["leaderboards"])
     response["links"] = [status.Link(**link) for link in response["links"]]
     response["serverResets"] = status.ServerReset(**response["serverResets"])
