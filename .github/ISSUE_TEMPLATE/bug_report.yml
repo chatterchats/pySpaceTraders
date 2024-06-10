@@ -11,20 +11,17 @@ body:
         This form is only for submitting bug reports. If you have a usage question
         or are unsure if this is really a bug, make sure to:
 
-        - Read the [docs](https://helldivers-2.github.io/json/readme.html)
-        - Ask on [Discord Chat](https://discord.gg/E8UUfWYmf9)
+        - Ask on [Discord Chat](https://discord.gg/JDa79KXUw9)
 
         Also try to search for your issue - it may have already been answered or even fixed in the development branch.
         However, if you find that an old, closed issue still persists in the latest version,
         you should open a new issue using the form below instead of commenting on the old issue.
   - type: input
-    id: reproduction-path
+    id: reproduction
     attributes:
-      label: Faulty File Path & Name
+      label: How to reproduce?
       description: |
-        Provide the path that is malfunctioning.
-
-        Please do not just fill in a random path. The issue will be closed if no valid path or filename is provided.
+        List the steps to reproduce the error.
       placeholder: /path/to/file.json
     validations:
       required: true
@@ -33,7 +30,7 @@ body:
     attributes:
       label: Request information
       description: |
-        Provide as much information about your issue as you can. JSON Snippets or just brief overview of what is wrong.
+        Provide as much information about your issue as you can. logs or just brief overview of what is wrong.
       placeholder: Request information
     validations:
       required: true

@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest new features for the API
+description: Suggest new features for the sdk
 title: '[FEATURE]: '
 labels: [ 'feature request' ]
 body:
