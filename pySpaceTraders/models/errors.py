@@ -1,7 +1,5 @@
 from enum import Enum
 
-from enum import Enum
-
 
 class Codes(Enum):
     # HTTP Error Codes
@@ -35,10 +33,12 @@ class Codes(Enum):
     REQUEST_HEADER_FIELDS_TOO_LARGE = 431
     UNAVAILABLE_FOR_LEGAL_REASONS = 451
 
+    # class GeneralCodes(Enum):
     # General Error Codes
     COOLDOWN_CONFLICT_ERROR = 4000
     WAYPOINT_NO_ACCESS_ERROR = 4001
 
+    # class AccountCodes(Enum):
     # Account Error Codes
     TOKEN_EMPTY_ERROR = 4100
     TOKEN_MISSING_SUBJECT_ERROR = 4101
@@ -53,6 +53,7 @@ class Codes(Enum):
     REGISTER_AGENT_SYMBOL_RESERVED_ERROR = 4110
     REGISTER_AGENT_CONFLICT_SYMBOL_ERROR = 4111
 
+    # class ShipCodes(Enum):
     # Ship Error Codes
     NAVIGATE_IN_TRANSIT_ERROR = 4200
     NAVIGATE_INVALID_DESTINATION_ERROR = 4201
@@ -116,6 +117,7 @@ class Codes(Enum):
     WAYPOINT_NO_YIELD_ERROR = 4261
     SHIP_JUMP_DESTINATION_UNDER_CONSTRUCTION_ERROR = 4262
 
+    # class ContractCodes(Enum):
     # Contract Error Codes
     ACCEPT_CONTRACT_NOT_AUTHORIZED_ERROR = 4500
     ACCEPT_CONTRACT_CONFLICT_ERROR = 4501
@@ -129,6 +131,7 @@ class Codes(Enum):
     SHIP_DELIVER_INVALID_LOCATION_ERROR = 4510
     EXISTING_CONTRACT_ERROR = 4511
 
+    # class MarketCodes(Enum):
     # Market Error Codes
     MARKET_TRADE_INSUFFICIENT_CREDITS_ERROR = 4600
     MARKET_TRADE_NO_PURCHASE_ERROR = 4601
@@ -136,9 +139,11 @@ class Codes(Enum):
     MARKET_NOT_FOUND_ERROR = 4603
     MARKET_TRADE_UNIT_LIMIT_ERROR = 4604
 
+    # class FactionCodes(Enum):
     # Faction Error Codes
     WAYPOINT_NO_FACTION_ERROR = 4700
 
+    # class ConstructionCodes(Enum):
     # Construction Error Codes
     CONSTRUCTION_MATERIAL_NOT_REQUIRED = 4800
     CONSTRUCTION_MATERIAL_FULFILLED = 4801
