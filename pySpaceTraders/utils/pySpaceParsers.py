@@ -1,3 +1,9 @@
+"""
+:Date: 10 JUN 2024
+:version: 0.1.0
+:Authors: ChatterChats
+"""
+
 from pySpaceTraders.models import errors, cargo, factions, status, contract
 from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
 
