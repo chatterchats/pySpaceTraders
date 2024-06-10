@@ -1,11 +1,11 @@
 import json
 import math
 import os.path
-from typing import List
-from pySpaceTraders.models import agent
-from pySpaceTraders.models.factions import Faction
+
+from pySpaceTraders.models import agents, contracts, factions
+from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
-from pySpaceTraders.utils.pySpaceParsers import *
+from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
 
 
@@ -33,15 +33,16 @@ class Client:
 
         # Initialize
         self.request = PySpaceRequest(logger=self.logger if self.log else None)
+        self.parser = PySpaceParser(self)
 
         # Token and Login
         self.token: str = ""
-        self.__login()
+        self._login()
         self.request.set_token(self.token)
 
         self.logger.info("Init complete")
 
-    def __login(self):
+    def _login(self):
         """Login to SpaceTraders.
         Looks for token.json, and checks if same"""
         loaded = False
@@ -55,9 +56,9 @@ class Client:
                     loaded = True
 
         if not loaded:
-            self.__register()
+            self._register()
 
-    def __register(self):
+    def _register(self):
 
         self.logger.debug("Check Agent Symbol and Faction Validity")
         # Check validity of agent symbol
@@ -66,17 +67,20 @@ class Client:
                 f"Agent Symbol `{self.agent_symbol}` has a length of {len(self.agent_symbol)}. Length must be >= 3 and <=14."
             )
 
-        # Make sure faction is recruiting
+        # Make sure faction_dict is recruiting
         factions_list = self.list_factions(all_factions=True)
 
-        for faction in factions_list:
+        for faction in factions_list.factions:
             if faction.symbol == self.agent_faction and not faction.isRecruiting:
                 raise ValueError(
                     f"`{self.agent_faction.value}` Faction is not recruiting new agents at this time."
                 )
 
         self.logger.debug("Agent Symbol and Faction Valid")
-        json_data = {"symbol": self.agent_symbol, "faction": self.agent_faction.value}
+        json_data = {
+            "symbol": self.agent_symbol,
+            "faction_dict": self.agent_faction.value,
+        }
 
         if self.agent_email:
             json_data["email"] = self.agent_email
@@ -97,36 +101,44 @@ class Client:
                 json.dump(data, f, indent=4, ensure_ascii=False)
         elif "error" in register.keys():
             self.logger.error("Error with registering.")
-            print(register)
-            return parse_error(register)
+            return self.parser.error(register)
 
     def status(self):
         """Server Status and Announcements."""
         response = self.request.api("GET", "/")
-        return parse_status(response)
+        return self.parser.status(response)
 
     # Agent Endpoints #
-    def my_agent(self) -> agent.MyAgent:
+    def my_agent(self) -> agents.Agent:
         """Fetch your agent's details"""
         response = self.request.api("GET", "/my/agent")
         if "error" in response.keys():
-            return parse_error(response)
-        return agent.MyAgent(**response["data"])
+            return self.parser.error(response)
+        return self.parser.agent(response)
 
-    def list_agents(self, limit: int = 10, page: int = 1) -> agent.ListResponse:
+    def list_agents(
+        self, limit: int = 20, page: int = 1, all_agents: bool = False
+    ) -> agents.ListResponse:
         """List all_factions agents. (Paginated)"""
         # token optional for get_agent
         query = {"limit": limit, "page": page}
         response = self.request.api("GET", "/agents", query_params=query)
+        if all_agents:
+            pages = math.ceil(response["meta"]["total"] / limit)
+            if pages > 1:
+                for next_page in range(2, int(pages) + 1):
+                    query["page"] = next_page
+                    additional_response = self.request.api(
+                        "GET", f"/agents", query_params=query
+                    )
+                    response["data"].extend(additional_response["data"])
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
         if "error" in response.keys():
-            return parse_error(response)
-        response["data"] = [
-            agent.Agent(**agent_token) for agent_token in response["data"]
-        ]
+            return self.parser.error(response)
+        return self.parser.agent_list(response)
 
-        return agent.ListResponse(**response)
-
-    def get_agent(self, symbol: str = "CHATS") -> agent.Agent:
+    def get_agent(self, symbol: str = "CHATS") -> agents.Agent:
         """Fetch single agent details."""
         # token optional for get_agent
         response = self.request.api(
@@ -135,53 +147,60 @@ class Client:
             symbol,
         )
         if "error" in response.keys():
-            return parse_error(response)
-        return agent.Agent(**response["data"])
+            return self.parser.error(response)
+        return self.parser.agent(response)
 
     # Contracts Endpoints #
-    def list_contracts(self, limit: int = 10, page: int = 1):
-        """Paginated list all_factions of your contracts. (Paginated)"""
+    def list_contracts(
+        self, limit: int = 20, page: int = 1, all_contracts: bool = False
+    ):
+        """Paginated list all contracts agent has (Paginated)"""
         query = {"limit": limit, "page": page}
         response = self.request.api("GET", f"/my/contracts", query_params=query)
         if "error" in response.keys():
-            return parse_error(response)
+            return self.parser.error(response)
+
+        if all_contracts:
+            pages = math.ceil(response["meta"]["total"] / limit)
+            if pages > 1:
+                for next_page in range(2, int(pages) + 1):
+                    query["page"] = next_page
+                    additional_response = self.request.api(
+                        "GET", f"/my/contracts", query_params=query
+                    )
+                    response["data"].extend(additional_response["data"])
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
         response["contracts"] = [
-            parse_contract({**single_contract, "ApiInstance": self})
+            self.parser.contract(single_contract)
             for single_contract in response["data"]
         ]
         response.pop("data")
+        # TODO: Implement Parse Contract List
         return response
 
-    def get_contract(self, contract_id: str) -> contract.Contract:
+    def get_contract(self, contract_id: str) -> contracts.Contract:
         """Fetch single contract details"""
         # token optional for get_agent
 
         response = self.request.api("GET", f"/my/contracts/{contract_id}")
         if "error" in response.keys():
-            return parse_error(response)
-        return parse_contract({**response["data"], "ApiInstance": self})
+            return self.parser.error(response)
+        return self.parser.contract(response)
 
-    def __accept_contract(self, contract_id: str) -> contract.ContractAgent:
+    def accept_contract(self, contract_id: str) -> contracts.ContractAgent:
         """Accept a contract."""
 
         response = self.request.api("POST", f"/my/contracts/{contract_id}/accept")
 
         if "error" in response.keys():
-            return parse_error(response)
+            return self.parser.error(response)
         if "data" in response.keys():
-            response = response["data"]
-            return contract.ContractAgent(
-                **{
-                    "agent": agent.MyAgent(**response["agent"]),
-                    "contract": parse_contract(
-                        **{**response["contract"], "ApiInstance": self}
-                    ),
-                }
-            )
+            return self.parser.contract_agent(response)
 
-    def __deliver_contract_cargo(
+    def deliver_contract_cargo(
         self, contract_id: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
-    ) -> contract.DeliverResponse:
+    ) -> contracts.Deliver:
         """Deliver cargo for a given contract."""
         payload = {
             "shipSymbol": ship_symbol,
@@ -192,56 +211,48 @@ class Client:
             "POST", f"/my/contracts/{contract_id}/deliver", payload=payload
         )
         if "error" in response.keys():
-            return parse_error(response)
-        return contract.DeliverResponse(
-            **{
-                "contract": parse_contract(response["data"]["contract"]),
-                "cargo": parse_cargo(response["data"]["cargo"]),
-            }
-        )
+            return self.parser.error(response)
+        elif "data" in response:
+            return self.parser.contract_cargo(response)
 
-    def __fulfill_contract(self, contract_id: str) -> contract.ContractAgent:
+    def fulfill_contract(self, contract_id: str) -> contracts.ContractAgent:
         """Fulfill (complete) a contract."""
         response = self.request.api("POST", f"/my/contracts/{contract_id}/fulfill")
-        if "error" in response.keys():
-            return parse_error(response)
-        return contract.ContractAgent(
-            **{
-                "agent": agent.Agent(**response["data"]["agent"]),
-                "contract": parse_contract(response["data"]["contract"]),
-            }
-        )
+        if "error" in response:
+            return self.parser.error(response)
+        elif "data" in response:
+            return self.parser.contract_agent(response)
 
     # Faction Endpoints #
     def list_factions(
-        self, limit: int = 10, page: int = 1, all_factions: bool = False
-    ) -> List[Faction]:
-        """List all_factions discovered factions in the game. (Paginated)"""
+        self, limit: int = 20, page: int = 1, all_factions: bool = False
+    ) -> factions.ListResponse:
+        """List factions in the game. (Paginated)"""
         query = {"limit": limit, "page": page}
         response = self.request.api("GET", f"/factions", query_params=query)
         if "error" in response.keys():
-            return parse_error(response)
+            return self.parser.error(response)
         elif "data" in response.keys():
-            response["data"] = [parse_faction(faction) for faction in response["data"]]
-        if all_factions:
-            pages = math.ceil(response["meta"]["total"]) / 10
-            if pages > 1:
-                for next_page in range(2, int(pages)):
-                    addt_response = self.request.api(
-                        "GET", f"/factions", query_params=query
-                    )
-                    response["data"].extend(
-                        [parse_faction(faction) for faction in addt_response["data"]]
-                    )
+            if all_factions:
+                pages = math.ceil(response["meta"]["total"] / limit)
+                if pages > 1:
+                    for next_page in range(2, int(pages) + 1):
+                        query["page"] = next_page
+                        additional_response = self.request.api(
+                            "GET", f"/factions", query_params=query
+                        )
+                        response["data"].extend(additional_response["data"])
+                response["meta"]["page"] = 1
+                response["meta"]["limit"] = len(response["data"])
 
-        return response["data"]
+            return self.parser.faction_list(response)
 
     def get_faction(
         self, faction_symbol: FactionSymbol
     ) -> factions.Faction | dict[str, str | int]:
         """View the details of a faction."""
-        if faction_symbol in FactionSymbol:
-            response = self.request.api("GET", f"/factions/{faction_symbol}")
-            return parse_faction(response["data"])
-        else:
-            return parse_error({"code": 404, "message": "Faction not found"})
+        response = self.request.api("GET", f"/factions/{faction_symbol}")
+        if "error" in response:
+            return self.parser.error(response)
+        elif "data" in response:
+            return self.parser.faction(response)
