@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Optional
+
+from pySpaceTraders.models.general import ListMeta
 
 
 @dataclass
@@ -9,14 +11,10 @@ class Agent:
     credits: int
     startingFaction: str
     shipCount: int
-
-
-@dataclass
-class MyAgent(Agent):
-    accountId: str
+    accountId: Optional[str]
 
 
 @dataclass
 class ListResponse:
-    data: List[Agent]
-    meta: Dict[str, int]
+    agents: List[Agent]
+    meta: ListMeta

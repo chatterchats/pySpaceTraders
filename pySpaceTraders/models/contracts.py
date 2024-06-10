@@ -3,9 +3,10 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any
 
-from pySpaceTraders.models.agent import Agent
+from pySpaceTraders.models.agents import Agent
 from pySpaceTraders.models.cargo import Cargo
 from pySpaceTraders.models.enums import *
+from pySpaceTraders.models.general import ListMeta
 
 
 @dataclass
@@ -108,14 +109,14 @@ class Contract:
 
 @dataclass
 class Response:
-    """Represents the response containing contract data."""
+    """Represents the status_dict containing contract data."""
 
     data: Contract
 
 
 @dataclass
 class Deliver:
-    """Represents the response given when cargo is delivered as part of a contract."""
+    """Represents the status_dict given when cargo is delivered as part of a contract."""
 
     contract: Contract
     cargo: Cargo
@@ -123,7 +124,7 @@ class Deliver:
 
 @dataclass
 class ContractAgent:
-    """Represents the response under the "data" key containing an agent and contract data."""
+    """Represents the status_dict under the "data" key containing an agent and contract data."""
 
     agent: Agent
     contract: Contract
@@ -131,22 +132,7 @@ class ContractAgent:
 
 @dataclass
 class ListResponse:
-    """Represents a response containing a list of contracts and associated metadata."""
+    """Represents a status_dict containing a list of contracts and associated metadata."""
 
-    data: List[Contract]
-    meta: Dict[str, int]
-
-
-# Response Models
-@dataclass
-class ContractAgentResponse:
-    """Represents a response containing contract agent data."""
-
-    data: ContractAgent
-
-
-@dataclass
-class DeliverResponse:
-    """Represents a response containing delivery cargo data."""
-
-    data: Deliver
+    contracts: List[Contract]
+    meta: ListMeta
