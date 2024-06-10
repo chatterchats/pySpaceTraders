@@ -1,9 +1,9 @@
+from dataclasses import dataclass
 from typing import List, Dict
 
-from pydantic import BaseModel
 
-
-class Agent(BaseModel):
+@dataclass
+class Agent:
     symbol: str
     headquarters: str
     credits: int
@@ -11,10 +11,12 @@ class Agent(BaseModel):
     shipCount: int
 
 
+@dataclass
 class MyAgent(Agent):
     accountId: str
 
 
-class ListResponse(BaseModel):
+@dataclass
+class ListResponse:
     data: List[Agent]
     meta: Dict[str, int]

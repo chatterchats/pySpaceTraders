@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List
 
-from pydantic import BaseModel
-
 
 @dataclass
 class Announcement:
