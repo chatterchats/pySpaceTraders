@@ -26,5 +26,5 @@ class Response:
 
 @dataclass
 class ListResponse:
-    data: List[Faction]
+    factions: List[Faction]
     meta: Dict[str, int]
