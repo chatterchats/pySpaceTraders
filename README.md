@@ -38,17 +38,22 @@ Run utilize the SDK:
 
 ```py
 from pySpaceTraders.api import Client
-from pySpaceTraders.models import enums
+from pySpaceTraders.models.enums import FactionSymbol
 
-client = Client()
-token = client.register(symbol="NEWUSER", faction=enums.FactionSymbol.COSMIC)
-my_agent = client.my_agent()
+client = Client(
+    agent_symbol="NEWUSER", 
+    agent_faction=FactionSymbol.COSMIC, 
+    agent_email="", 
+    log=True, 
+    debug=True)
 
->> > my_agent
+
+player = client.my_agent()
+>>> player
 MyAgent(symbol="NEWUSER", headquarters="AA-BBB-CC", credits=175000, startingFaction="COSMIC", shipCount=2,
         accountId="abcdefghijklmnopqrstuvwxy")
 
->> > my_agent.symbol
+>>> player.symbol
 'NEWUSER'
 ```
 
