@@ -23,6 +23,9 @@ To get started with contributing:
 1. Fork the repository.
 2. Clone your fork: `git clone https://github.com/your-username/your-repo-name.git`
 3. Create a new branch: `git checkout -b feature-branch`
+4. Create Virtual Environment `python -m venv venv
+5. Activate Virtual Environment | Windows: `venv\Scripts\activate` or Linux/Mac: `source venv/bin/acvtivate`
+6. Install development requirements `pip install -r requirements-dev.txt`
 
 ## Code of Conduct
 
@@ -57,15 +60,13 @@ If you have an idea for an improvement, please open an issue on GitHub with:
 
 We use [Black](https://github.com/psf/black) to maintain code style consistency. Please format your code before submitting changes.
 
-1. Install Black: `pip install black`
-2. Run Black on your code: `black .`
+1. Run Black on your code: `black .`
 
 ## Running Tests
 
 Ensure that all tests pass before submitting your changes. To run the tests:
 
-1. Install the required dependencies: `pip install -r requirements.txt`
-2. Run the tests: `pytest`
+1. Run the tests: `pytest`
 
 ## Additional Resources
 
