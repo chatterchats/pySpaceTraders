@@ -1,8 +1,15 @@
 # pySpaceTrader
 
-pySpaceTrader is a Python-based SDK for the space trading game, '**SpaceTraders**' where you can trade goods, explore space, and manage
-resources.
-This project is designed to provide a convenient way to access the game's API to play the game.
+pySpaceTrader is a Python-based SDK for the space trading game, **SpaceTraders**, where you can trade goods, explore space, and manage resources. This project is designed to provide a convenient way to access the game\'s API to play the game.
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
+- [License](#license)
+- [Contact](#contact)
 
 ## Installation
 
@@ -14,19 +21,17 @@ This project is designed to provide a convenient way to access the game's API to
    ```bash
    cd pySpaceTrader
    ```
-3. Create a Virtual Environment
-    ```bash
-    python -m venv .venv
-    ```
-
-4. Activate Virtual Environment
-    ```bash
-    # Windows
-    ./.venv/Scripts/activate
+3. Create a Virtual Environment:
+   ```bash
+   python -m venv .venv
+   ```
+4. Activate Virtual Environment:
+   ```bash
+   # Windows
+   .\.venv\Scripts\activate
    # Linux & Mac
-   source ./.venv/bin/activate
-    ```
-
+   source .venv/bin/activate
+   ```
 5. Install the dependencies:
    ```bash
    pip install -r requirements.txt
@@ -34,24 +39,24 @@ This project is designed to provide a convenient way to access the game's API to
 
 ## Usage
 
-Run utilize the SDK:
+To utilize the SDK:
 
-```py
+```python
 from pySpaceTraders.api import Client
 from pySpaceTraders.models.enums import FactionSymbol
 
 client = Client(
-    agent_symbol="NEWUSER", 
+    agent_symbol=\"NEWUSER\", 
     agent_faction=FactionSymbol.COSMIC, 
-    agent_email="", 
+    agent_email=\"\", 
     log=True, 
-    debug=True)
-
+    debug=True
+)
 
 player = client.my_agent()
 >>> player
-MyAgent(symbol="NEWUSER", headquarters="AA-BBB-CC", credits=175000, startingFaction="COSMIC", shipCount=2,
-        accountId="abcdefghijklmnopqrstuvwxy")
+MyAgent(symbol=\"NEWUSER\", headquarters=\"AA-BBB-CC\", credits=175000, startingFaction=\"COSMIC\", shipCount=2,
+        accountId=\"abcdefghijklmnopqrstuvwxy\")
 
 >>> player.symbol
 'NEWUSER'
@@ -59,13 +64,11 @@ MyAgent(symbol="NEWUSER", headquarters="AA-BBB-CC", credits=175000, startingFact
 
 ## Contributing
 
-We welcome contributions! Please follow these steps:
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for detailed instructions on how to get started.
 
-1. Fork the repository.
-2. Create a new branch: `git checkout -b feature-branch`.
-3. Make your changes and commit them: `git commit -m 'Add new feature'`.
-4. Push to the branch: `git push origin feature-branch`.
-5. Submit a pull request.
+## Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 ## License
 
@@ -73,4 +76,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For questions or suggestions, open an issue!.
+For questions or suggestions, open an issue on GitHub.
