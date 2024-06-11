@@ -64,11 +64,11 @@ MyAgent(symbol=\"NEWUSER\", headquarters=\"AA-BBB-CC\", credits=175000, starting
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for detailed instructions on how to get started.
+We welcome contributions! Please see our [Contributing Guide](.github/CONTRIBUTING.md) for detailed instructions on how to get started.
 
 ## Code of Conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of Conduct](.github/CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 ## License
 
