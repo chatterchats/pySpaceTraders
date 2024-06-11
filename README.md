@@ -46,20 +46,20 @@ from pySpaceTraders.api import Client
 from pySpaceTraders.models.enums import FactionSymbol
 
 client = Client(
-    agent_symbol=\"NEWUSER\", 
+    agent_symbol="NEWUSER", 
     agent_faction=FactionSymbol.COSMIC, 
-    agent_email=\"\", 
+    agent_email="", 
     log=True, 
     debug=True
 )
 
 player = client.my_agent()
 >>> player
-MyAgent(symbol=\"NEWUSER\", headquarters=\"AA-BBB-CC\", credits=175000, startingFaction=\"COSMIC\", shipCount=2,
-        accountId=\"abcdefghijklmnopqrstuvwxy\")
+MyAgent(symbol="NEWUSER", headquarters="AA-BBB-CC", credits=175000, startingFaction="COSMIC", shipCount=2,
+        accountId="abcdefghijklmnopqrstuvwxy")
 
 >>> player.symbol
-'NEWUSER'
+"NEWUSER"
 ```
 
 ## Contributing
