@@ -1,15 +1,16 @@
+from dataclasses import dataclass
 from typing import List, Dict
 
-from pydantic import BaseModel
 
-
-class Trait(BaseModel):
+@dataclass
+class Trait:
     symbol: str
     name: str
     description: str
 
 
-class Faction(BaseModel):
+@dataclass
+class Faction:
     symbol: str
     name: str
     description: str
@@ -18,10 +19,12 @@ class Faction(BaseModel):
     isRecruiting: bool
 
 
-class Response(BaseModel):
+@dataclass
+class Response:
     data: List[Faction]
 
 
-class ListResponse(BaseModel):
-    data: List[Faction]
+@dataclass
+class ListResponse:
+    factions: List[Faction]
     meta: Dict[str, int]

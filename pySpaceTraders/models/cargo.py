@@ -1,16 +1,17 @@
+from dataclasses import dataclass
 from typing import List
 
-from pydantic import BaseModel
 
-
-class Item(BaseModel):
+@dataclass
+class Item:
     symbol: str
     name: str
     description: str
     units: int
 
 
-class Cargo(BaseModel):
+@dataclass
+class Cargo:
     capacity: int
     units: int
     inventory: List[Item]
