@@ -1,6 +1,7 @@
 """
 :author: GH feba66
 :copyright: © 2023 Felix Baumkötter"""
+
 import time
 from datetime import datetime, timedelta
 from functools import wraps
@@ -15,9 +16,9 @@ class Limiter:
     time: datetime | None
     lock: Lock
 
-    def __init__(self, points=2, duration=1) -> None:
-        self.points = points
-        self.duration = duration
+    def __init__(self, points: int = 2, duration: float = 1) -> None:
+        self.points: int = points
+        self.duration: float = duration
         self.sema = Semaphore(points)
         self.time = None
         self.lock = Lock()
@@ -42,7 +43,7 @@ class Limiter:
         return (self.time - datetime.now()).total_seconds() if self.time is not None else 0
 
     def sleep(self):
-        time.sleep(max((self.duration - self.time_to_reset()) * .95, .01))
+        time.sleep(max((self.duration - self.time_to_reset()) * 0.95, 0.01))
 
     def __call__(self, func) -> Any:
         @wraps(func)
@@ -78,7 +79,7 @@ class BurstyLimiter:
 
             while (not self.static.aquire()) and (not self.burst.aquire()):
                 if not self.static.check_reset() and not self.burst.check_reset():
-                    time.sleep(max(min(self.static.time_to_reset(), self.burst.time_to_reset()) * .95, 0))
+                    time.sleep(max(min(self.static.time_to_reset(), self.burst.time_to_reset()) * 0.95, 0))
 
             # print(f"{datetime.utcnow()} ", end="")
             r = func(*args, **kwargs)
