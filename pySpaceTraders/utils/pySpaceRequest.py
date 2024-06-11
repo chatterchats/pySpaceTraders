@@ -56,9 +56,9 @@ class PySpaceRequest:
         self,
         method: str,
         endpoint: str,
-        path_param: str = None,
-        query_params: dict = None,
-        payload: dict = None,
+        path_param: str = "",
+        query_params: dict | None = None,
+        payload: dict | None = None,
     ) -> dict:
         """
         Makes an HTTP request to the SpaceTraders specified endpoint.
@@ -71,21 +71,11 @@ class PySpaceRequest:
 
         :return dict:
         """
-        self.logger.debug(f"Method: {method}")
-        self.logger.debug(f"Endpoint: {endpoint}")
-        self.logger.debug(f"Path Param: {path_param}")
-        self.logger.debug(f"Query Param: {query_params}")
-        self.logger.debug(f"Payload: {payload}")
         if path_param:
             endpoint = f"{endpoint}/{path_param}"
         if method not in REQUEST_TYPES:
-            self.logger.exception(f"Invalid request method: {method}")
             return {"405": f"Invalid request method: {method}"}
         else:
-            self.logger.info(f"{method} {endpoint}")
             return self.session.request(
-                method=method,
-                url=endpoint,
-                params=query_params,
-                data=(json.dumps(payload, ensure_ascii=False) if payload else None),
+                method=method, url=endpoint, params=query_params, data=payload if payload else None
             ).json()
