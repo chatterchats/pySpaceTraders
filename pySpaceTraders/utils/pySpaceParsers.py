@@ -46,9 +46,7 @@ class PySpaceParser:
         pass
 
     def contract_list(self, contract_meta_dict: dict) -> contracts.ListResponse:
-        contract_meta_dict["data"] = [
-            self.contract(contract) for contract in contract_meta_dict["data"]
-        ]
+        contract_meta_dict["data"] = [self.contract(contract) for contract in contract_meta_dict["data"]]
         return from_dict(
             contracts.ListResponse,
             {
@@ -58,30 +56,26 @@ class PySpaceParser:
         )
 
     def faction_list(self, faction_dict: dict) -> factions.ListResponse:
-        faction_dict["data"] = [
-            self.faction(faction) for faction in faction_dict["data"]
-        ]
+        faction_dict["data"] = [self.faction(faction) for faction in faction_dict["data"]]
         return from_dict(
             factions.ListResponse,
             {"factions": faction_dict["data"], "meta": faction_dict["meta"]},
         )
 
     def agent_list(self, agent_meta_dict: dict) -> agents.ListResponse:
-        agent_meta_dict["data"] = [
-            self.agent(agent_dict) for agent_dict in agent_meta_dict["data"]
-        ]
+        agent_meta_dict["data"] = [self.agent(agent_dict) for agent_dict in agent_meta_dict["data"]]
         return from_dict(
             agents.ListResponse,
             {"agents": agent_meta_dict["data"], "meta": agent_meta_dict["meta"]},
         )
 
     @staticmethod
-    def error(error_dict: dict):
+    def error(error_dict: dict) -> errors.Error:
         error_dict = error_dict["error"]
         code = error_dict["code"]
         error = errors.Codes(code).name
         message = error_dict["message"]
-        return {"error": error, "message": message}
+        return from_dict(errors.Error, {"error": error, "message": message})
 
     @staticmethod
     def cargo(cargo_dict: dict) -> cargo.Cargo:
