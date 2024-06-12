@@ -7,8 +7,8 @@
 from dataclasses import dataclass
 from typing import Any
 
-from pySpaceTraders.models import errors, cargo, factions, status, contracts, agents, systems, waypoints
-from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, SystemType, WaypointType
+from pySpaceTraders.models import errors, cargo, factions, status, contracts, agents, systems, waypoints, markets
+from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, SystemType, WaypointType, SupplyLevel
 
 from dacite import from_dict
 
@@ -132,9 +132,29 @@ class PySpaceParser:
         waypoint_dict = waypoint_dict["data"] if "data" in waypoint_dict else waypoint_dict
         waypoint_dict["type"] = WaypointType(waypoint_dict["type"])
         if "faction" in waypoint_dict:
-            waypoint_dict["faction"] = [FactionSymbol(faction) for faction in waypoint_dict["faction"]]
+            waypoint_dict["faction"]["symbol"] = FactionSymbol(waypoint_dict["faction"]["symbol"])
         for trait in waypoint_dict["traits"]:
             trait["symbol"] = waypoints.WaypointTraitSymbol(trait["symbol"])
         for modifier in waypoint_dict["modifiers"]:
             modifier["symbol"] = waypoints.WaypointModifierSymbol(modifier["symbol"])
         return from_dict(waypoints.Waypoint, waypoint_dict)
+
+    @staticmethod
+    def market(market_dict: dict) -> markets.Market:
+        market_dict = market_dict["data"] if "data" in market_dict else {}
+
+        def convert_symbols(trade_list: list, symbol_key: str = "symbol"):
+            if trade_list:
+                for trade_item in trade_list:
+                    trade_item[symbol_key] = TradeSymbol(trade_item[symbol_key])
+
+        convert_symbols(market_dict.get("tradeGoods", []))
+        convert_symbols(market_dict.get("exports", []))
+        convert_symbols(market_dict.get("imports", []))
+        convert_symbols(market_dict.get("exchange", []))
+        convert_symbols(market_dict.get("transactions", []), "tradeSymbol")
+
+        for trade_good in market_dict.get("tradeGoods", []):
+            trade_good["supply"] = SupplyLevel(trade_good["supply"])
+
+        return from_dict(markets.Market, market_dict)
