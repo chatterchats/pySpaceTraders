@@ -7,8 +7,8 @@
 from dataclasses import dataclass
 from typing import Any
 
-from pySpaceTraders.models import errors, cargo, factions, status, contracts, agents
-from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
+from pySpaceTraders.models import errors, cargo, factions, status, contracts, agents, systems, waypoints
+from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, SystemType, WaypointType
 
 from dacite import from_dict
 
@@ -69,6 +69,21 @@ class PySpaceParser:
             {"agents": agent_meta_dict["data"], "meta": agent_meta_dict["meta"]},
         )
 
+    def system_list(self, system_meta_dict: dict) -> systems.ListResponse:
+        system_meta_dict["data"] = [self.system(system_dict) for system_dict in system_meta_dict["data"]]
+        return from_dict(
+            systems.ListResponse,
+            {"systems": system_meta_dict["data"], "meta": system_meta_dict["meta"]},
+        )
+
+    def system_waypoints_list(self, system_waypoint_meta_dict: dict) -> waypoints.ListResponse:
+        for waypoint in system_waypoint_meta_dict["data"]:
+            waypoint = self.waypoint(waypoint)
+        return from_dict(
+            waypoints.ListResponse,
+            {"waypoints": system_waypoint_meta_dict["data"], "meta": system_waypoint_meta_dict["meta"]},
+        )
+
     @staticmethod
     def error(error_dict: dict) -> errors.Error:
         error_dict = error_dict["error"]
@@ -101,3 +116,25 @@ class PySpaceParser:
         if "data" in agent_dict:
             agent_dict = agent_dict["data"]
         return from_dict(agents.Agent, agent_dict)
+
+    @staticmethod
+    def system(system_dict: dict) -> systems.System:
+        system_dict = system_dict["data"] if "data" in system_dict else system_dict
+        system_dict["type"] = SystemType(system_dict["type"])
+        for waypoint in system_dict["waypoints"]:
+            waypoint["type"] = WaypointType(waypoint["type"])
+        for faction in system_dict["factions"]:
+            faction = FactionSymbol(faction["symbol"])
+        return from_dict(systems.System, system_dict)
+
+    @staticmethod
+    def waypoint(waypoint_dict: dict) -> waypoints.Waypoint:
+        waypoint_dict = waypoint_dict["data"] if "data" in waypoint_dict else waypoint_dict
+        waypoint_dict["type"] = WaypointType(waypoint_dict["type"])
+        if "faction" in waypoint_dict:
+            waypoint_dict["faction"] = [FactionSymbol(faction) for faction in waypoint_dict["faction"]]
+        for trait in waypoint_dict["traits"]:
+            trait["symbol"] = waypoints.WaypointTraitSymbol(trait["symbol"])
+        for modifier in waypoint_dict["modifiers"]:
+            modifier["symbol"] = waypoints.WaypointModifierSymbol(modifier["symbol"])
+        return from_dict(waypoints.Waypoint, waypoint_dict)

@@ -1,8 +1,10 @@
 import json
 import math
 import os.path
+import sqlite3
+import re
 
-from pySpaceTraders.models import agents, contracts, factions, errors
+from pySpaceTraders.models import agents, contracts, factions, errors, systems, waypoints
 from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
 from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
@@ -83,7 +85,7 @@ class Client:
         if self.agent_email:
             json_data["email"] = self.agent_email
 
-        register = self.request.api("POST", "https://api.spacetraders.io/v2/register", payload=json_data)
+        register = self.request.api("POST", "/register", payload=json_data)
 
         if "data" in register.keys():
             self.logger.debug("Register Successful")
@@ -108,7 +110,7 @@ class Client:
     def my_agent(self) -> agents.Agent | errors.Error:
         """Fetch your agent's details"""
         response = self.request.api("GET", "/my/agent")
-        if "error" in response.keys():
+        if "error" in response:
             return self.parser.error(response)
         return self.parser.agent(response)
 
@@ -123,11 +125,11 @@ class Client:
         if all_agents and response["meta"]["pages"] > 1:
             for next_page in range(2, int(response["meta"]["pages"]) + 1):
                 query["page"] = next_page
-                additional_response = self.request.api("GET", f"/agents", query_params=query)
+                additional_response = self.request.api("GET", "/agents", query_params=query)
                 response["data"].extend(additional_response["data"])
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
-        if "error" in response.keys():
+        if "error" in response:
             return self.parser.error(response)
         return self.parser.agent_list(response)
 
@@ -137,9 +139,9 @@ class Client:
         response = self.request.api(
             "GET",
             f"/agents",
-            symbol,
+            path_param=symbol,
         )
-        if "error" in response.keys():
+        if "error" in response:
             return self.parser.error(response)
         return self.parser.agent(response)
 
@@ -149,8 +151,8 @@ class Client:
     ) -> contracts.ListResponse | errors.Error:
         """Paginated list all contracts agent has (Paginated)"""
         query = {"limit": limit, "page": page}
-        response = self.request.api("GET", f"/my/contracts", query_params=query)
-        if "error" in response.keys():
+        response = self.request.api("GET", "/my/contracts", query_params=query)
+        if "error" in response:
             return self.parser.error(response)
 
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
@@ -158,7 +160,7 @@ class Client:
         if all_contracts and response["meta"]["pages"] > 1:
             for next_page in range(2, int(response["meta"]["pages"]) + 1):
                 query["page"] = next_page
-                additional_response = self.request.api("GET", f"/my/contracts", query_params=query)
+                additional_response = self.request.api("GET", "/my/contracts", query_params=query)
                 response["data"].extend(additional_response["data"])
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
@@ -171,17 +173,17 @@ class Client:
         """Fetch single contract details"""
         # token optional for get_agent
 
-        response = self.request.api("GET", f"/my/contracts/{contract_id}")
-        if "error" in response.keys():
+        response = self.request.api("GET", "/my/contracts", path_param=contract_id)
+        if "error" in response:
             return self.parser.error(response)
         return self.parser.contract(response)
 
     def accept_contract(self, contract_id: str) -> contracts.ContractAgent | errors.Error:
         """Accept a contract."""
 
-        response = self.request.api("POST", f"/my/contracts/{contract_id}/accept")
+        response = self.request.api("POST", "/my/contracts/{}/accept", path_param=contract_id)
 
-        if "error" in response.keys():
+        if "error" in response:
             return self.parser.error(response)
 
         return self.parser.contract_agent(response)
@@ -190,20 +192,20 @@ class Client:
         self, contract_id: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> contracts.Deliver | errors.Error:
         """Deliver cargo for a given contract."""
-        payload = {
+        data = {
             "shipSymbol": ship_symbol,
             "tradeSymbol": trade_symbol,
             "units": units,
         }
-        response = self.request.api("POST", f"/my/contracts/{contract_id}/deliver", payload=payload)
-        if "error" in response.keys():
+        response = self.request.api("POST", "/my/contracts/{}/deliver", path_param=contract_id, payload=data)
+        if "error" in response:
             return self.parser.error(response)
 
         return self.parser.contract_cargo(response)
 
     def fulfill_contract(self, contract_id: str) -> contracts.ContractAgent | errors.Error:
         """Fulfill (complete) a contract."""
-        response = self.request.api("POST", f"/my/contracts/{contract_id}/fulfill")
+        response = self.request.api("POST", "/my/contracts/{}/fulfill", path_param=contract_id)
         if "error" in response:
             return self.parser.error(response)
 
@@ -215,14 +217,14 @@ class Client:
     ) -> factions.ListResponse | errors.Error:
         """List factions in the game. (Paginated)"""
         query = {"limit": limit, "page": page}
-        response = self.request.api("GET", f"/factions", query_params=query)
-        if "error" in response.keys():
+        response = self.request.api("GET", "/factions", query_params=query)
+        if "error" in response:
             return self.parser.error(response)
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
         if all_factions and response["meta"]["pages"] > 1:
             for next_page in range(2, int(response["meta"]["pages"]) + 1):
                 query["page"] = next_page
-                additional_response = self.request.api("GET", f"/factions", query_params=query)
+                additional_response = self.request.api("GET", "/factions", query_params=query)
                 response["data"].extend(additional_response["data"])
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
@@ -231,8 +233,74 @@ class Client:
 
     def get_faction(self, faction_symbol: FactionSymbol) -> factions.Faction | errors.Error:
         """View the details of a faction."""
-        response = self.request.api("GET", f"/factions/{faction_symbol}")
+        response = self.request.api("GET", "/factions", path_param=faction_symbol)
         if "error" in response:
             return self.parser.error(response)
 
         return self.parser.faction(response)
+
+    def list_systems(
+        self, limit: int = 20, page: int = 1, all_systems: bool = False, confirm_all: bool = True
+    ) -> systems.ListResponse | errors.Error:
+        """
+        List systems in the game. (Paginated)
+        :param limit: # of entries per page
+        :param page: Page number of paginated data.
+        :param all_systems: Get all systems in one page. CAUTION: 8000+ Systems
+        :param confirm_all: We confirm, because this is chonky!
+        :return:
+        """
+        query = {"limit": limit, "page": page}
+        response = self.request.api("GET", "/systems", query_params=query)
+        if "error" in response:
+            return self.parser.error(response)
+        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
+        if all_systems and confirm_all and response["meta"]["pages"] > 1:
+            for next_page in range(2, int(response["meta"]["pages"]) + 1):
+                query["page"] = next_page
+                additional_response = self.request.api("GET", "/systems", query_params=query)
+                additional_response["meta"]["pages"] = math.ceil(additional_response["meta"]["total"] / limit)
+                response["data"].extend(additional_response["data"])
+                print(additional_response)
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
+        return self.parser.system_list(response)
+
+    def get_system(self, system_symbol: str) -> systems.System | errors.Error:
+        response = self.request.api("GET", "/systems", path_param=system_symbol.upper())
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.system(response)
+
+    def list_system_waypoints(
+        self, system_symbol: str, limit: int = 10, page: int = 1, all_waypoints: bool = False
+    ) -> waypoints.ListResponse | errors.Error:
+        query = {"limit": limit, "page": page}
+        response = self.request.api(
+            "GET", "/systems/{}/waypoints", path_param=system_symbol.upper(), query_params=query
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
+        if all_waypoints and response["meta"]["pages"] > 1:
+            for next_page in range(2, int(response["meta"]["pages"]) + 1):
+                query["page"] = next_page
+                additional_response = self.request.api("GET", "/systems", query_params=query)
+                additional_response["meta"]["pages"] = math.ceil(additional_response["meta"]["total"] / limit)
+                response["data"].extend(additional_response["data"])
+                print(additional_response)
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
+        return self.parser.system_waypoints_list(response)
+
+    def get_waypoint(self, waypoint_symbol: str) -> waypoints.Waypoint | errors.Error:
+        system_symbol = "-".join("X1-VK13-ED9Z".split("-")[:-1])
+        response = self.request.api(
+            "GET",
+            "/systems/{}/waypoints/{}",
+            path_param=[system_symbol.upper(), waypoint_symbol.upper()],
+        )
+        print(response)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.waypoint(response)

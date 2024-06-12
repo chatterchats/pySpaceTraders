@@ -51,19 +51,19 @@ class PySpaceRequest:
         self.token = token
         self.session.headers.update({"Authorization": f"Bearer {self.token}"})
 
-    @BurstyLimiter(Limiter(2, 1.2), Limiter(10, 10.5))
+    @BurstyLimiter(Limiter(2, 1.2), Limiter(10, 20.2))
     def api(
         self,
         method: str,
         endpoint: str,
-        path_param: str = "",
+        path_param: str | list = "",
         query_params: dict | None = None,
         payload: dict | None = None,
     ) -> dict:
         """
         Makes an HTTP request to the SpaceTraders specified endpoint.
 
-        :param str method:
+        :param str method: `REQUEST_TYPES`
         :param str endpoint:
         :param str path_param:
         :param dict query_params:
@@ -72,10 +72,18 @@ class PySpaceRequest:
         :return dict:
         """
         if path_param:
-            endpoint = f"{endpoint}/{path_param}"
+            if "{}" in endpoint:
+                endpoint = endpoint.format(*path_param)
+            else:
+                endpoint = f"{endpoint}/{path_param}"
+
         if method not in REQUEST_TYPES:
             return {"405": f"Invalid request method: {method}"}
         else:
+            if self.logger:
+                self.logger.debug(
+                    f"Method: {method} | Endpoint: {endpoint} | Path Param: {path_param} | Query Param: {str(query_params)}"
+                )
             return self.session.request(
                 method=method, url=endpoint, params=query_params, data=payload if payload else None
             ).json()

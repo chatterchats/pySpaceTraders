@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from pySpaceTraders.models.enums import FactionSymbol, WaypointType, WaypointTraitSymbol, WaypointModifierSymbol
-from general import ListMeta
+from pySpaceTraders.models.general import ListMeta
 
 
 @dataclass
@@ -27,18 +27,27 @@ class Chart:
 
 
 @dataclass
-class Waypoint:
+class Orbital:
+    symbol: str
+
+
+@dataclass
+class SystemWaypoint:
     symbol: str
     type: WaypointType
-    systemSymbol: str
     x: int
     y: int
-    orbitals: List[str]
-    orbits: str
-    faction: FactionSymbol
+    orbitals: List[Orbital]
+    orbits: Optional[str]
+
+
+@dataclass
+class Waypoint(SystemWaypoint):
+    systemSymbol: str
+    faction: Optional[FactionSymbol]
     traits: List[WaypointTrait]
-    modifiers: List[WaypointModifier]
-    chart: Chart
+    modifiers: Optional[List[WaypointModifier]]
+    chart: Optional[Chart]
     isUnderConstruction: bool
 
 

@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import List
 
 from pySpaceTraders.models.enums import SystemType, FactionSymbol
-from general import ListMeta
+from pySpaceTraders.models.general import ListMeta
+from pySpaceTraders.models.waypoints import SystemWaypoint
 
 
 @dataclass
@@ -12,7 +13,7 @@ class System:
     type: SystemType
     x: int
     y: int
-    waypoints: List[Waypoint]
+    waypoints: List[SystemWaypoint]
     factions: List[FactionSymbol]
 
 
