@@ -1,9 +1,11 @@
 import json
 import math
 import os.path
+from typing import List
 
-from pySpaceTraders.models import agents, contracts, factions, errors, systems, waypoints
-from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
+from pySpaceTraders.models import agents, contracts, factions, errors, systems, waypoints, markets
+from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, WaypointType, WaypointTraitSymbol
+from pySpaceTraders.models.waypoints import WaypointTrait
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
 from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
@@ -271,11 +273,25 @@ class SpaceTraderClient:
         return self.parser.system(response)
 
     def list_system_waypoints(
-        self, system_symbol: str, limit: int = 10, page: int = 1, all_waypoints: bool = False
+        self,
+        system_symbol: str,
+        limit: int = 10,
+        page: int = 1,
+        traits: WaypointTraitSymbol | List[WaypointTraitSymbol] | None = None,
+        waypoint_type: WaypointType | None = None,
+        all_waypoints: bool = False,
     ) -> waypoints.ListResponse | errors.Error:
         query = {"limit": limit, "page": page}
+
+        if traits and (traits is WaypointTraitSymbol or isinstance(traits, list)):
+            if traits is WaypointTraitSymbol:
+                traits = [traits]
+            query["traits"] = traits
+        if waypoint_type and waypoint_type is WaypointType:
+            query["type"] = waypoint_type
+
         response = self.request.api(
-            "GET", "/systems/{}/waypoints", path_param=system_symbol.upper(), query_params=query
+            "GET", "/systems/{}/waypoints", path_param=[system_symbol.upper()], query_params=query
         )
         if "error" in response:
             return self.parser.error(response)
@@ -283,22 +299,33 @@ class SpaceTraderClient:
         if all_waypoints and response["meta"]["pages"] > 1:
             for next_page in range(2, int(response["meta"]["pages"]) + 1):
                 query["page"] = next_page
-                additional_response = self.request.api("GET", "/systems", query_params=query)
+                additional_response = self.request.api(
+                    "GET", "/systems/{}/waypoints", path_param=system_symbol.upper(), query_params=query
+                )
                 additional_response["meta"]["pages"] = math.ceil(additional_response["meta"]["total"] / limit)
                 response["data"].extend(additional_response["data"])
-                print(additional_response)
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
         return self.parser.system_waypoints_list(response)
 
     def get_waypoint(self, waypoint_symbol: str) -> waypoints.Waypoint | errors.Error:
-        system_symbol = "-".join("X1-VK13-ED9Z".split("-")[:-1])
+        system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
             "/systems/{}/waypoints/{}",
             path_param=[system_symbol.upper(), waypoint_symbol.upper()],
         )
-        print(response)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.waypoint(response)
+
+    def get_market(self, waypoint_symbol: str) -> markets.Market | errors.Error:
+        system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
+        response = self.request.api(
+            "GET",
+            "/systems/{}/waypoints/{}/market",
+            path_param=[system_symbol.upper(), waypoint_symbol.upper()],
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.market(response)
