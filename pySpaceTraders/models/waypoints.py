@@ -21,14 +21,19 @@ class WaypointTrait:
 
 @dataclass
 class Chart:
-    waypointSymbol: str
-    submittedBy: str
-    submittedOn: str
+    waypointSymbol: Optional[str]
+    submittedBy: Optional[str]
+    submittedOn: Optional[str]
 
 
 @dataclass
 class Orbital:
     symbol: str
+
+
+@dataclass
+class WaypointFactionSymbol:
+    symbol: FactionSymbol
 
 
 @dataclass
@@ -44,11 +49,11 @@ class SystemWaypoint:
 @dataclass
 class Waypoint(SystemWaypoint):
     systemSymbol: str
-    faction: Optional[FactionSymbol]
+    isUnderConstruction: bool
     traits: List[WaypointTrait]
+    faction: Optional[WaypointFactionSymbol]
     modifiers: Optional[List[WaypointModifier]]
     chart: Optional[Chart]
-    isUnderConstruction: bool
 
 
 @dataclass
