@@ -1,8 +1,6 @@
 import json
 import math
 import os.path
-import sqlite3
-import re
 
 from pySpaceTraders.models import agents, contracts, factions, errors, systems, waypoints
 from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol
@@ -11,8 +9,8 @@ from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
 
 
-class Client:
-    """SpaceTraders API Client Handler"""
+class SpaceTraderClient:
+    """SpaceTraders API SpaceTraderClient Handler"""
 
     def __init__(
         self,

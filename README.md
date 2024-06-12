@@ -40,16 +40,17 @@ pySpaceTrader is a Python-based SDK for the space trading game, **SpaceTraders**
 ## Usage
 
 To utilize the SDK:
+`TODO: pip install pySpaceTraders`
 
 ```python
-from pySpaceTraders.api import Client
+from pySpaceTraders import SpaceTraderClient
 from pySpaceTraders.models.enums import FactionSymbol
 
-client = Client(
-    agent_symbol="NEWUSER", 
-    agent_faction=FactionSymbol.COSMIC, 
-    agent_email="", 
-    log=True, 
+client = SpaceTraderClient(
+    agent_symbol="NEWUSER",
+    agent_faction=FactionSymbol.COSMIC,
+    agent_email="",
+    log=True,
     debug=True
 )
 
