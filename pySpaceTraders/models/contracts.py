@@ -1,7 +1,7 @@
 """Contract Models"""
 
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from pySpaceTraders.models.agents import Agent
 from pySpaceTraders.models.cargo import Cargo
@@ -47,7 +47,7 @@ class Contract:
     accepted: bool
     fulfilled: bool
     expiration: str
-    deadlineToAccept: str
+    deadlineToAccept: Optional[str]
     ApiInstance: Any
 
     def update_contract(self, contract_in) -> None:
@@ -91,9 +91,7 @@ class Contract:
                 if remaining > 0:
                     if units > remaining:
                         units = remaining
-                    self.ApiInstance.deliver_contract(
-                        self.id, ship_symbol, trade_symbol, units
-                    )
+                    self.ApiInstance.deliver_contract(self.id, ship_symbol, trade_symbol, units)
                 elif remaining == 0:
                     return False
         raise ValueError(f"Invalid trade_symbol {trade_symbol} for contract {self.id}")
