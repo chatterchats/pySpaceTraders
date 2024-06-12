@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
-from enums import TradeSymbol, ActivityLevel, SupplyLevel
+from .enums import TradeSymbol, ActivityLevel, SupplyLevel
 
 
 # Playing Fun OP
@@ -52,10 +52,10 @@ class MarketTradeGood:
 
 
 @dataclass
-class MarketMarket:
-    symbol: TradeSymbol
+class Market:
+    symbol: str
     exports: List[MarketExport]
     imports: List[MarketImport]
-    exchanges: List[MarketExchange]
-    transactions: List[MarketTransaction]
-    tradeGoods: List[MarketTradeGood]
+    exchange: List[MarketExchange]
+    transactions: Optional[List[MarketTransaction]]
+    tradeGoods: Optional[List[MarketTradeGood]]
