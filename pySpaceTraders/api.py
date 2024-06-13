@@ -3,9 +3,19 @@ import math
 import os.path
 from typing import List
 
-from pySpaceTraders.models import agents, contracts, factions, errors, systems, waypoints, markets
+from pySpaceTraders.models import (
+    agents,
+    contracts,
+    factions,
+    errors,
+    systems,
+    waypoints,
+    markets,
+    shipyards,
+    jumpgates,
+    constructionsites,
+)
 from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, WaypointType, WaypointTraitSymbol
-from pySpaceTraders.models.waypoints import WaypointTrait
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
 from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
@@ -193,8 +203,8 @@ class SpaceTraderClient:
     ) -> contracts.Deliver | errors.Error:
         """Deliver cargo for a given contract."""
         data = {
-            "shipSymbol": ship_symbol,
-            "tradeSymbol": trade_symbol,
+            "ship_symbol": ship_symbol,
+            "trade_symbol": trade_symbol,
             "units": units,
         }
         response = self.request.api("POST", "/my/contracts/{}/deliver", path_param=contract_id, payload=data)
@@ -329,3 +339,54 @@ class SpaceTraderClient:
         if "error" in response:
             return self.parser.error(response)
         return self.parser.market(response)
+
+    def get_shipyard(self, waypoint_symbol: str) -> shipyards.Shipyard | errors.Error:
+        system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
+        response = self.request.api(
+            "GET",
+            "/systems/{}/waypoints/{}/shipyard",
+            path_param=[system_symbol.upper(), waypoint_symbol.upper()],
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.shipyard(response)
+
+    def get_jumpgate(self, waypoint_symbol: str) -> jumpgates.JumpGate | errors.Error:
+        system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
+        response = self.request.api(
+            "GET",
+            "/systems/{}/waypoints/{}/shipyard",
+            path_param=[system_symbol.upper(), waypoint_symbol.upper()],
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.jumpgate(response)
+
+    def get_construction(self, waypoint_symbol: str) -> constructionsites.ConstructionSite | errors.Error:
+        system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
+        response = self.request.api(
+            "GET",
+            "/systems/{}/waypoints/{}/construction",
+            path_param=[system_symbol.upper(), waypoint_symbol.upper()],
+        )
+
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.construction_site(response)
+
+    def supply_construction(self, waypoint_symbol: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int):
+        system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
+        payload = {
+            "ship_symbol": ship_symbol,
+            "trade_symbol": trade_symbol,
+            "units": units,
+        }
+        response = self.request.api(
+            "POST",
+            "/systems/{}/waypoints/{}/construction/supply",
+            path_param=[system_symbol.upper(), waypoint_symbol.upper()],
+            payload=payload,
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.construction_supply(response)

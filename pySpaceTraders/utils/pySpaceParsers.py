@@ -7,10 +7,37 @@
 from dataclasses import dataclass
 from typing import Any
 
-from pySpaceTraders.models import errors, cargo, factions, status, contracts, agents, systems, waypoints, markets
-from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, SystemType, WaypointType, SupplyLevel
-
 from dacite import from_dict
+
+from pySpaceTraders.models import (
+    errors,
+    cargo,
+    factions,
+    status,
+    contracts,
+    agents,
+    systems,
+    waypoints,
+    markets,
+    shipyards,
+    jumpgates,
+    constructionsites,
+)
+from pySpaceTraders.models.enums import (
+    FactionSymbol,
+    TradeSymbol,
+    SystemType,
+    WaypointType,
+    SupplyLevel,
+    ShipType,
+    ActivityLevel,
+    ShipFrameSymbol,
+    ShipEngineSymbol,
+    ShipModuleSymbol,
+    ShipMountSymbol,
+    ShipReactorSymbol,
+    DepositSymbol,
+)
 
 
 @dataclass
@@ -28,10 +55,10 @@ class PySpaceParser:
             contract_dict = contract_dict["data"]
         contract_dict["factionSymbol"] = FactionSymbol(contract_dict["factionSymbol"])
         contract_dict["ApiInstance"] = self.ApiInstance
-        # Convert each delivery tradeSymbol to TradeSymbol enum
+        # Convert each delivery trade_symbol to TradeSymbol enum
         for delivery in contract_dict["terms"]["deliver"]:
-            if "tradeSymbol" in delivery:
-                delivery["tradeSymbol"] = TradeSymbol(delivery["tradeSymbol"])
+            if "trade_symbol" in delivery:
+                delivery["trade_symbol"] = TradeSymbol(delivery["trade_symbol"])
 
         return from_dict(contracts.Contract, contract_dict)
 
@@ -83,6 +110,16 @@ class PySpaceParser:
             waypoints.ListResponse,
             {"waypoints": system_waypoint_meta_dict["data"], "meta": system_waypoint_meta_dict["meta"]},
         )
+
+    def construction_supply(self, construction_cargo_dict: dict) -> constructionsites.ConstructionSiteSupplyResponse:
+        construction_cargo_dict = (
+            construction_cargo_dict["data"] if "data" in construction_cargo_dict else construction_cargo_dict
+        )
+
+        construction_cargo_dict["construction"] = self.construction_site(construction_cargo_dict["construction"])
+        construction_cargo_dict["cargo"] = self.cargo(construction_cargo_dict["cargo"])
+
+        return from_dict(constructionsites.ConstructionSiteSupplyResponse, construction_cargo_dict)
 
     @staticmethod
     def error(error_dict: dict) -> errors.Error:
@@ -152,9 +189,59 @@ class PySpaceParser:
         convert_symbols(market_dict.get("exports", []))
         convert_symbols(market_dict.get("imports", []))
         convert_symbols(market_dict.get("exchange", []))
-        convert_symbols(market_dict.get("transactions", []), "tradeSymbol")
+        convert_symbols(market_dict.get("transactions", []), "trade_symbol")
 
         for trade_good in market_dict.get("tradeGoods", []):
             trade_good["supply"] = SupplyLevel(trade_good["supply"])
 
         return from_dict(markets.Market, market_dict)
+
+    @staticmethod
+    def shipyard(shipyard_dict: dict) -> shipyards.Shipyard:
+        shipyard_dict = shipyard_dict["data"] if "data" in shipyard_dict else shipyard_dict
+
+        for shipType in shipyard_dict["shipTypes"]:
+            shipType["type"] = ShipType(shipType["type"])
+
+        for transaction in shipyard_dict["transactions"]:
+            transaction["shipType"] = ShipType(transaction["shipType"])
+
+        for ship in shipyard_dict["ships"]:
+            ship["type"] = ShipType(ship["type"])
+            ship["supply"] = SupplyLevel(ship["supply"])
+            ship["activity"] = ActivityLevel(ship["activity"])
+            ship["frame"]["symbol"] = ShipFrameSymbol(ship["frame"]["symbol"])
+            ship["reactor"]["symbol"] = ShipReactorSymbol(ship["reactor"]["symbol"])
+            ship["engine"]["symbol"] = ShipEngineSymbol(ship["engine"]["symbol"])
+
+            for module in ship["modules"]:
+                module["symbol"] = ShipModuleSymbol(module["symbol"])
+
+            for mount in ship["mounts"]:
+                mount["symbol"] = ShipMountSymbol(mount["symbol"])
+
+                if "deposits" in mount:
+                    deposit_array = []
+                    for deposit in mount.get("deposits", []):
+                        deposit_array.append(DepositSymbol(deposit))
+                    mount["deposits"] = deposit_array
+
+        return from_dict(shipyards.Shipyard, shipyard_dict)
+
+    @staticmethod
+    def jumpgate(jumpgate_dict: dict) -> jumpgates.JumpGate:
+        jumpgate_dict = jumpgate_dict["data"] if "data" in jumpgate_dict else jumpgate_dict
+        if "connections" in jumpgate_dict and not jumpgate_dict["connections"]:
+            jumpgate_dict["connections"] = [""]
+
+        return from_dict(jumpgates.JumpGate, jumpgate_dict)
+
+    @staticmethod
+    def construction_site(construction_site_dict: dict) -> constructionsites.ConstructionSite:
+        construction_site_dict = (
+            construction_site_dict["data"] if "data" in construction_site_dict else construction_site_dict
+        )
+        for material in construction_site_dict["materials"]:
+            material["trade_symbol"] = TradeSymbol(material["trade_symbol"])
+
+        return from_dict(constructionsites.ConstructionSite, construction_site_dict)
