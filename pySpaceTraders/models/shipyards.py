@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from pySpaceTraders.models.enums import ShipType, SupplyLevel, ActivityLevel
 from pySpaceTraders.models.ships import ShipFrame, ShipReactor, ShipModule, ShipMount
@@ -27,13 +27,17 @@ class ShipyardShip:
     reactor: ShipReactor
     modules: List[ShipModule]
     mounts: List[ShipMount]
-    modificationsFee: int
+
+
+@dataclass
+class ShipyardShipType:
+    type: ShipType
 
 
 @dataclass
 class Shipyard:
     symbol: str
-    shipTypes: List[ShipType]
-    transactions: List[ShipyardTransaction]
-    ships: List[ShipyardShip]
-    modificationFee: int
+    shipTypes: List[ShipyardShipType]
+    transactions: Optional[List[ShipyardTransaction]]
+    ships: Optional[List[ShipyardShip]]
+    modificationsFee: int

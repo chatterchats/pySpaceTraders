@@ -73,6 +73,7 @@ class Contract:
                 return True
             elif "error" in response:
                 return False
+        return False
 
     def deliver(self, ship_symbol: str, trade_symbol: TradeSymbol, units: int) -> bool:
         """

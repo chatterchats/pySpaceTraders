@@ -69,7 +69,7 @@ class ShipMount:
     name: str
     description: Optional[str]
     strength: Optional[int]
-    deposits: List[List[DepositSymbol]]
+    deposits: Optional[List[DepositSymbol]]
     requirements: ShipRequirements
 
 
