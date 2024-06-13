@@ -89,7 +89,7 @@ class SpaceTraderClient:
         self.logger.debug("Agent Symbol and Faction Valid")
         json_data = {
             "symbol": self.agent_symbol,
-            "faction_dict": self.agent_faction.value,
+            "faction": self.agent_faction.value,
         }
 
         if self.agent_email:
@@ -100,16 +100,17 @@ class SpaceTraderClient:
         if "data" in register.keys():
             self.logger.debug("Register Successful")
             self.token = register["data"]["token"]
-            with open("tokens.json", "r") as f:
-                self.logger.debug("Reading tokens.json")
-                data = json.load(f)
+            data = {}
+            if os.path.isfile("tokens.json"):
+                with open("tokens.json", "r") as f:
+                    self.logger.debug("Reading tokens.json")
+                    data = json.load(f)
             with open("tokens.json", "w", encoding="utf-8") as f:
                 self.logger.debug("Writing new token to tokens.json")
                 data[self.agent_symbol] = {"token": self.token}
                 json.dump(data, f, indent=4, ensure_ascii=False)
         elif "error" in register.keys():
-            self.logger.error("Error with registering.")
-            return self.parser.error(register)
+            self.logger.error(f"Error with registering. {self.parser.error(register)}")
 
     def status(self):
         """Server Status and Announcements."""
