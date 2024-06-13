@@ -1,0 +1,52 @@
+name: Milestone
+description: Template for milestone Trackijng
+title: '[Milestone]: '
+labels:
+  - milestone
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of Objective
+      description: Provide a clear and concise title for the milestone objective
+      placeholder: Implements x, y, and z.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks of Objective
+      description: >-
+        List the individual tasks that need to be completed to achieve the
+        milestone objective.
+      value: |-
+        - [ ] Task 1
+        - [ ] Task 2
+        - [ ] Task 3
+        - [ ] Task 4
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Any new dependencies added for this objective?
+      description: List any dependencies that may be required for this objective
+      value: |-
+        1. 
+        2. 
+        3. 
+        4. 
+  - type: markdown
+    attributes:
+      value: |-
+        ## **Progress Updates**
+        Provide regular updates on the progress of the milestone objective
+        - Update
+          - Date: DD MMM YYYY
+          - Description: Description of Progress
+  - type: markdown
+    attributes:
+      value: |-
+        ## **Comments**
+        Any additional comments or notes related to the milestone objective
+
