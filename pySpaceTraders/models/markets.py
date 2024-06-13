@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from .enums import TradeSymbol, ActivityLevel, SupplyLevel
+from pySpaceTraders.models.enums import TradeSymbol, ActivityLevel, SupplyLevel
 
 
 # Playing Fun OP
