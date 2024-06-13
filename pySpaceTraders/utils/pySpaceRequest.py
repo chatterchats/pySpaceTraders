@@ -4,8 +4,6 @@
 :Authors: ChatterChats
 """
 
-import json
-
 import httpx
 
 from pySpaceTraders.constants import V2_STARTRADERS_URL, __version__, REQUEST_TYPES
@@ -56,7 +54,7 @@ class PySpaceRequest:
         self,
         method: str,
         endpoint: str,
-        path_param: str | list = "",
+        path_param: str | list | None = None,
         query_params: dict | None = None,
         payload: dict | None = None,
     ) -> dict:
@@ -81,9 +79,8 @@ class PySpaceRequest:
             return {"405": f"Invalid request method: {method}"}
         else:
             if self.logger:
-                self.logger.debug(
-                    f"Method: {method} | Endpoint: {endpoint} | Path Param: {path_param} | Query Param: {str(query_params)}"
-                )
+                self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
+                self.logger.debug(f"Path Param: {path_param} | Query Param: {str(query_params)} | Payload: {payload}")
             return self.session.request(
-                method=method, url=endpoint, params=query_params, data=payload if payload else None
+                method=method, url=endpoint, params=query_params, json=payload if payload else None
             ).json()
