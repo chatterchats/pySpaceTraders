@@ -49,7 +49,7 @@ class PySpaceRequest:
         self.token = token
         self.session.headers.update({"Authorization": f"Bearer {self.token}"})
 
-    @BurstyLimiter(Limiter(2, 1.2), Limiter(10, 20.2))
+    @BurstyLimiter(Limiter(2, 1.2), Limiter(30, 60.6))
     def api(
         self,
         method: str,
@@ -78,9 +78,12 @@ class PySpaceRequest:
         if method not in REQUEST_TYPES:
             return {"405": f"Invalid request method: {method}"}
         else:
+            response = self.session.request(
+                method=method, url=endpoint, params=query_params, json=payload if payload else None
+            )
             if self.logger:
                 self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
                 self.logger.debug(f"Path Param: {path_param} | Query Param: {str(query_params)} | Payload: {payload}")
-            return self.session.request(
-                method=method, url=endpoint, params=query_params, json=payload if payload else None
-            ).json()
+                self.logger.debug(f"Constructed URL: {response.url} | Response: {response.status_code}")
+
+            return response.json()
