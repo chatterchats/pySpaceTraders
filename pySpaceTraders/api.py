@@ -130,18 +130,18 @@ class SpaceTraderClient:
     ) -> agents.ListResponse | errors.Error:
         """List all_factions agents. (Paginated)"""
         # token optional for get_agent
-        query = {"limit": limit, "page": page}
+        query = {"limit": 20 if all_agents else limit, "page": page}
         response = self.request.api("GET", "/agents", query_params=query)
+
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
-        if all_agents and response["meta"]["pages"] > 1:
-            for next_page in range(2, int(response["meta"]["pages"]) + 1):
-                query["page"] = next_page
-                additional_response = self.request.api("GET", "/agents", query_params=query)
-                response["data"].extend(additional_response["data"])
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
         if "error" in response:
             return self.parser.error(response)
+
+        if all_agents and response["meta"]["pages"] > 1:
+            response["data"].extend(self.get_all_pages("/agents", response["meta"]["pages"]))
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
+
         return self.parser.agent_list(response)
 
     def get_agent(self, symbol: str = "CHATS") -> agents.Agent | errors.Error:
@@ -161,7 +161,7 @@ class SpaceTraderClient:
         self, limit: int = 20, page: int = 1, all_contracts: bool = False
     ) -> contracts.ListResponse | errors.Error:
         """Paginated list all contracts agent has (Paginated)"""
-        query = {"limit": limit, "page": page}
+        query = {"limit": 20 if all_contracts else limit, "page": page}
         response = self.request.api("GET", "/my/contracts", query_params=query)
         if "error" in response:
             return self.parser.error(response)
@@ -169,15 +169,10 @@ class SpaceTraderClient:
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
 
         if all_contracts and response["meta"]["pages"] > 1:
-            for next_page in range(2, int(response["meta"]["pages"]) + 1):
-                query["page"] = next_page
-                additional_response = self.request.api("GET", "/my/contracts", query_params=query)
-                response["data"].extend(additional_response["data"])
+            response["data"].extend(self.get_all_pages("/my/contracts", response["meta"]["pages"]))
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
-        response["contracts"] = [self.parser.contract(single_contract) for single_contract in response["data"]]
-        response.pop("data")
-        # TODO: Implement Parse Contract List
+
         return self.parser.contract_list(response)
 
     def get_contract(self, contract_id: str) -> contracts.Contract | errors.Error:
@@ -192,7 +187,7 @@ class SpaceTraderClient:
     def accept_contract(self, contract_id: str) -> contracts.ContractAgent | errors.Error:
         """Accept a contract."""
 
-        response = self.request.api("POST", "/my/contracts/{}/accept", path_param=contract_id)
+        response = self.request.api("POST", "/my/contracts/{}/accept", path_param=[contract_id])
 
         if "error" in response:
             return self.parser.error(response)
@@ -227,16 +222,13 @@ class SpaceTraderClient:
         self, limit: int = 20, page: int = 1, all_factions: bool = False
     ) -> factions.ListResponse | errors.Error:
         """List factions in the game. (Paginated)"""
-        query = {"limit": limit, "page": page}
+        query = {"limit": 20 if all_factions else limit, "page": page}
         response = self.request.api("GET", "/factions", query_params=query)
         if "error" in response:
             return self.parser.error(response)
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
         if all_factions and response["meta"]["pages"] > 1:
-            for next_page in range(2, int(response["meta"]["pages"]) + 1):
-                query["page"] = next_page
-                additional_response = self.request.api("GET", "/factions", query_params=query)
-                response["data"].extend(additional_response["data"])
+            response["data"].extend(self.get_all_pages("/factions", response["meta"]["pages"]))
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
 
@@ -253,31 +245,20 @@ class SpaceTraderClient:
     def list_systems(
         self, limit: int = 20, page: int = 1, all_systems: bool = False, confirm_all: bool = True
     ) -> systems.ListResponse | errors.Error:
-        """
-        List systems in the game. (Paginated)
-        :param limit: # of entries per page
-        :param page: Page number of paginated data.
-        :param all_systems: Get all systems in one page. CAUTION: 8000+ Systems
-        :param confirm_all: We confirm, because this is chonky!
-        :return:
-        """
-        query = {"limit": limit, "page": page}
+        """List systems in the game. (Paginated)"""
+        query = {"limit": 20 if all_systems else limit, "page": page}
         response = self.request.api("GET", "/systems", query_params=query)
         if "error" in response:
             return self.parser.error(response)
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
         if all_systems and confirm_all and response["meta"]["pages"] > 1:
-            for next_page in range(2, int(response["meta"]["pages"]) + 1):
-                query["page"] = next_page
-                additional_response = self.request.api("GET", "/systems", query_params=query)
-                additional_response["meta"]["pages"] = math.ceil(additional_response["meta"]["total"] / limit)
-                response["data"].extend(additional_response["data"])
-                print(additional_response)
+            response["data"].extend(self.get_all_pages("/systems", response["meta"]["pages"]))
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
         return self.parser.system_list(response)
 
     def get_system(self, system_symbol: str) -> systems.System | errors.Error:
+        """Get the details of a system."""
         response = self.request.api("GET", "/systems", path_param=system_symbol.upper())
         if "error" in response:
             return self.parser.error(response)
@@ -292,14 +273,29 @@ class SpaceTraderClient:
         waypoint_type: WaypointType | None = None,
         all_waypoints: bool = False,
     ) -> waypoints.ListResponse | errors.Error:
-        query = {"limit": limit, "page": page}
+        """List waypoints for specified system. (Paginated)"""
+        limit = 20 if all_waypoints else limit
+        query = {
+            "limit": limit,
+            "page": page,
+        }
 
-        if traits and (traits is WaypointTraitSymbol or isinstance(traits, list)):
-            if traits is WaypointTraitSymbol:
-                traits = [traits]
-            query["traits"] = traits
-        if waypoint_type and waypoint_type is WaypointType:
-            query["type"] = waypoint_type
+        if traits:
+            if isinstance(traits, WaypointTraitSymbol):
+                self.logger.debug(f"Single Trait: {traits}")
+                query.update({"traits": traits})  # type: ignore
+            elif isinstance(traits, list):
+                self.logger.debug("Traits contains multiple traits")
+                trait_list = []
+                for trait in traits:
+                    self.logger.debug(f"Trait: {trait}")
+                    if isinstance(trait, WaypointTraitSymbol):
+                        trait_list.append(trait.value)
+                query.update({"traits": trait_list})  # type: ignore
+
+        if waypoint_type:
+            self.logger.debug(f"Waypoint Type Present: {waypoint_type}")
+            query.update({"type": waypoint_type.value})  # type: ignore
 
         response = self.request.api(
             "GET", "/systems/{}/waypoints", path_param=[system_symbol.upper()], query_params=query
@@ -308,18 +304,15 @@ class SpaceTraderClient:
             return self.parser.error(response)
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
         if all_waypoints and response["meta"]["pages"] > 1:
-            for next_page in range(2, int(response["meta"]["pages"]) + 1):
-                query["page"] = next_page
-                additional_response = self.request.api(
-                    "GET", "/systems/{}/waypoints", path_param=system_symbol.upper(), query_params=query
-                )
-                additional_response["meta"]["pages"] = math.ceil(additional_response["meta"]["total"] / limit)
-                response["data"].extend(additional_response["data"])
+            response["data"].extend(
+                self.get_all_pages("/systems/{}/waypoints".format(system_symbol.upper()), response["meta"]["pages"])
+            )
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
         return self.parser.system_waypoints_list(response)
 
     def get_waypoint(self, waypoint_symbol: str) -> waypoints.Waypoint | errors.Error:
+        """Get single waypoint details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -331,6 +324,7 @@ class SpaceTraderClient:
         return self.parser.waypoint(response)
 
     def get_market(self, waypoint_symbol: str) -> markets.Market | errors.Error:
+        """Get waypoint market details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -342,6 +336,7 @@ class SpaceTraderClient:
         return self.parser.market(response)
 
     def get_shipyard(self, waypoint_symbol: str) -> shipyards.Shipyard | errors.Error:
+        """Get waypoint shipyard details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -353,10 +348,11 @@ class SpaceTraderClient:
         return self.parser.shipyard(response)
 
     def get_jumpgate(self, waypoint_symbol: str) -> jumpgates.JumpGate | errors.Error:
+        """Get waypoint jumpgate details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
-            "/systems/{}/waypoints/{}/shipyard",
+            "/systems/{}/waypoints/{}/jump-gate",
             path_param=[system_symbol.upper(), waypoint_symbol.upper()],
         )
         if "error" in response:
@@ -364,6 +360,7 @@ class SpaceTraderClient:
         return self.parser.jumpgate(response)
 
     def get_construction(self, waypoint_symbol: str) -> constructionsites.ConstructionSite | errors.Error:
+        """Get waypoint construction details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -376,6 +373,7 @@ class SpaceTraderClient:
         return self.parser.construction_site(response)
 
     def supply_construction(self, waypoint_symbol: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int):
+        """Supply waypoint construction site."""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         payload = {
             "ship_symbol": ship_symbol,
@@ -391,3 +389,25 @@ class SpaceTraderClient:
         if "error" in response:
             return self.parser.error(response)
         return self.parser.construction_supply(response)
+
+    def list_ships(self, limit: int = 10, page: int = 1, all_ships: bool = False):
+        """List your ships. (Paginated)"""
+        query = {"limit": 20 if all_ships else limit, "page": page}
+        response = self.request.api("GET", "/my/ships", query_params=query)
+        if "error" in response:
+            return self.parser.error(response)
+
+        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
+        if all_ships and response["meta"]["pages"] > 1:
+            response["data"].extend(self.get_all_pages("/my/ships", response["meta"]["pages"]))
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
+
+        return self.parser.ship_list(response)
+
+    def get_all_pages(self, endpoint: str, pages: int) -> list:
+        data = []
+        for page in range(2, pages + 1):
+            data.extend(self.request.api("GET", endpoint, query_params={"limit": 20, "page": page})["data"])
+
+        return data
