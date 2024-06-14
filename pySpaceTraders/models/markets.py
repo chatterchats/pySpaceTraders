@@ -9,63 +9,46 @@ from pySpaceTraders.models.enums import TradeSymbol, ActivityLevel, SupplyLevel
 
 @dataclass
 class MarketExport:
-    symbol: str
+    symbol: TradeSymbol
     name: str
     description: str
-
-    def __post_init__(self):
-        self.symbol = TradeSymbol(self.symbol)
 
 
 @dataclass
 class MarketImport:
-    symbol: str
+    symbol: TradeSymbol
     name: str
     description: str
-
-    def __post_init__(self):
-        self.symbol = TradeSymbol(self.symbol)
 
 
 @dataclass
 class MarketExchange:
-    symbol: str
+    symbol: TradeSymbol
     name: str
     description: str
-
-    def __post_init__(self):
-        self.symbol = TradeSymbol(self.symbol)
 
 
 @dataclass
 class MarketTransaction:
     waypointSymbol: str
     shipSymbol: str
-    tradeSymbol: str
+    tradeSymbol: TradeSymbol
     type: str
     units: int
     pricePerUnit: int
     totalPrice: int
     timestamp: str
 
-    def __post_init__(self):
-        self.tradeSymbol = TradeSymbol(self.tradeSymbol)
-
 
 @dataclass
 class MarketTradeGood:
-    symbol: str
+    symbol: TradeSymbol
     type: str
     tradeVolume: int
-    supply: str
-    activity: str
+    supply: SupplyLevel
+    activity: ActivityLevel
     purchasePrice: int
     sellPrice: int
-
-    def __post_init__(self):
-        self.symbol = TradeSymbol(self.symbol)
-        self.supply = SupplyLevel(self.supply)
-        self.activity = ActivityLevel(self.activity)
 
 
 @dataclass

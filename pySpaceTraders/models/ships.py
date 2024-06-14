@@ -3,16 +3,17 @@ from typing import List, Optional
 
 from pySpaceTraders.models.cargo import Cargo
 from pySpaceTraders.models.enums import (
-    ShipFrameSymbol,
-    ShipReactorSymbol,
+    FactionSymbol,
     ShipEngineSymbol,
+    ShipFrameSymbol,
     ShipModuleSymbol,
     ShipMountSymbol,
-    DepositSymbol,
-    FactionSymbol,
-    ShipRole,
     ShipNavStatus,
     ShipNavFlightMode,
+    ShipReactorSymbol,
+    ShipRole,
+    TradeSymbol,
+    DepositSymbol,
     WaypointType,
 )
 from pySpaceTraders.models.general import ListMeta
@@ -27,7 +28,7 @@ class ShipRequirements:
 
 @dataclass
 class ShipFrame:
-    symbol: str
+    symbol: ShipFrameSymbol
     name: str
     description: str
     condition: float
@@ -37,13 +38,10 @@ class ShipFrame:
     fuelCapacity: int
     requirements: ShipRequirements
 
-    def __post_init__(self):
-        self.symbol = ShipFrameSymbol(self.symbol)
-
 
 @dataclass
 class ShipReactor:
-    symbol: str
+    symbol: ShipReactorSymbol
     name: str
     description: str
     condition: Optional[float]
@@ -51,13 +49,10 @@ class ShipReactor:
     powerOutput: int
     requirements: ShipRequirements
 
-    def __post_init__(self):
-        self.symbol = ShipReactorSymbol(self.symbol)
-
 
 @dataclass
 class ShipEngine:
-    symbol: str
+    symbol: ShipEngineSymbol
     name: str
     description: str
     condition: Optional[float]
@@ -65,36 +60,25 @@ class ShipEngine:
     speed: int
     requirements: ShipRequirements
 
-    def __post_init__(self):
-        self.symbol = ShipEngineSymbol(self.symbol)
-
 
 @dataclass
 class ShipModule:
-    symbol: str
+    symbol: ShipModuleSymbol
     name: str
     description: str
     capacity: Optional[int]
     range: Optional[int]
     requirements: ShipRequirements
 
-    def __post_init__(self):
-        self.symbol = ShipModuleSymbol(self.symbol)
-
 
 @dataclass
 class ShipMount:
-    symbol: str
+    symbol: ShipMountSymbol
     name: str
     description: Optional[str]
     strength: Optional[int]
-    deposits: Optional[List[str]]
+    deposits: Optional[List[DepositSymbol]]
     requirements: ShipRequirements
-
-    def __post_init__(self):
-        self.symbol = ShipMountSymbol(self.symbol)
-        if self.deposits is not None:
-            self.desposits = [DepositSymbol(deposit) for deposit in self.deposits]
 
 
 @dataclass
@@ -113,24 +97,17 @@ class ShipFuel:
 @dataclass
 class ShipRegistration:
     name: str
-    factionSymbol: str
-    role: str
-
-    def __post_init__(self):
-        self.factionSymbol = FactionSymbol(self.factionSymbol)
-        self.role = ShipRole(self.role)
+    factionSymbol: FactionSymbol
+    role: ShipRole
 
 
 @dataclass
 class ShipNavRouteLocation:
     symbol: str
-    type: str
+    type: WaypointType
     systemSymbol: str
     x: int
     y: int
-
-    def __post_init__(self):
-        self.type = WaypointType(self.type)
 
 
 @dataclass
@@ -146,12 +123,8 @@ class ShipNav:
     systemSymbol: str
     waypointSymbol: str
     route: ShipNavRoute
-    status: str
-    flightMode: str
-
-    def __post_init__(self):
-        self.status = ShipNavStatus(self.status)
-        self.flightMode = ShipNavFlightMode(self.flightMode)
+    status: ShipNavStatus
+    flightMode: ShipNavFlightMode
 
 
 @dataclass
@@ -162,6 +135,46 @@ class ShipCrew:
     rotation: str
     morale: int
     wages: int
+
+
+@dataclass
+class ShipCooldown:
+    shipSymbol: str
+    totalSeconds: int
+    remainingSeconds: int
+    expiration: str
+
+
+@dataclass
+class ShipRefineIO:
+    tradeSymbol: TradeSymbol
+    units: int
+
+
+@dataclass
+class ShipExtractionYield:
+    symbol: TradeSymbol
+    units: int
+
+
+@dataclass
+class ShipExtraction:
+    shipSymbol: str
+    amount: ShipExtractionYield
+
+
+@dataclass
+class ShipDeposit:
+    symbol: DepositSymbol
+
+
+@dataclass
+class Survey:
+    signature: str
+    symbol: str
+    deposits: List[ShipDeposit]
+    expiration: str
+    size: str
 
 
 @dataclass
@@ -180,6 +193,6 @@ class Ship:
 
 
 @dataclass
-class ListResponse:
-    ships: List[Ship]
+class ShipList:
+    data: List[Ship]
     meta: ListMeta

@@ -6,13 +6,10 @@ from pySpaceTraders.models.enums import TradeSymbol
 
 @dataclass
 class Item:
-    symbol: str
+    symbol: TradeSymbol
     name: str
     description: str
     units: int
-
-    def __post_init__(self):
-        self.symbol = TradeSymbol(self.symbol)
 
 
 @dataclass

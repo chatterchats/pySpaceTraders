@@ -19,6 +19,6 @@ class Agent:
 
 
 @dataclass
-class ListResponse:
-    agents: List[Agent]
+class AgentList:
+    data: List[Agent]
     meta: ListMeta

@@ -7,22 +7,16 @@ from pySpaceTraders.models.general import ListMeta
 
 @dataclass
 class WaypointModifier:
-    symbol: str
+    symbol: WaypointModifierSymbol
     name: str
     description: str
-
-    def __post_init__(self):
-        self.symbol = WaypointModifierSymbol(self.symbol)
 
 
 @dataclass
 class WaypointTrait:
-    symbol: str
+    symbol: WaypointTraitSymbol
     name: str
     description: str
-
-    def __post_init__(self):
-        self.symbol = WaypointTraitSymbol(self.symbol)
 
 
 @dataclass
@@ -39,23 +33,17 @@ class Orbital:
 
 @dataclass
 class WaypointFactionSymbol:
-    symbol: str
-
-    def __post_init__(self):
-        self.symbol = FactionSymbol(self.symbol)
+    symbol: FactionSymbol
 
 
 @dataclass
 class SystemWaypoint:
     symbol: str
-    type: str
+    type: WaypointType
     x: int
     y: int
     orbitals: List[Orbital]
     orbits: Optional[str]
-
-    def __post_init__(self):
-        self.type = WaypointType(self.type)
 
 
 @dataclass
@@ -69,6 +57,6 @@ class Waypoint(SystemWaypoint):
 
 
 @dataclass
-class ListResponse:
+class WaypointList:
     waypoints: List[Waypoint]
     meta: ListMeta

@@ -5,196 +5,203 @@
 """
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
-from dacite import from_dict
+from dacite import from_dict, Config
 
-from pySpaceTraders.models import (
-    errors,
-    cargo,
-    factions,
-    status,
-    contracts,
-    agents,
-    systems,
-    waypoints,
-    markets,
-    shipyards,
-    jumpgates,
-    constructionsites,
-    ships,
-)
+from pySpaceTraders.models.agents import AgentList, Agent
+from pySpaceTraders.models.cargo import Cargo
+from pySpaceTraders.models.constructionsites import ConstructionSite, ConstructionSiteSupplyResponse
+from pySpaceTraders.models.contracts import ContractList, Contract, ContractAgent, Deliver
 from pySpaceTraders.models.enums import (
-    FactionSymbol,
-    TradeSymbol,
-    SystemType,
-    WaypointType,
-    SupplyLevel,
-    ShipType,
     ActivityLevel,
-    ShipFrameSymbol,
+    ContractType,
+    DepositSymbol,
+    FactionTraitSymbol,
+    FactionSymbol,
+    ShipConditionEventSymbol,
     ShipEngineSymbol,
+    ShipFrameSymbol,
     ShipModuleSymbol,
     ShipMountSymbol,
+    ShipNavStatus,
+    ShipNavFlightMode,
     ShipReactorSymbol,
-    DepositSymbol,
+    ShipRole,
+    ShipType,
+    SupplyLevel,
+    SystemType,
+    TradeSymbol,
+    WaypointModifierSymbol,
+    WaypointTraitSymbol,
+    WaypointType,
 )
+from pySpaceTraders.models.errors import Error, Codes
+from pySpaceTraders.models.factions import FactionList, Faction
+from pySpaceTraders.models.jumpgates import JumpGate
+from pySpaceTraders.models.markets import Market
+from pySpaceTraders.models.ships import Ship, ShipList
+from pySpaceTraders.models.shipyards import Shipyard
+from pySpaceTraders.models.status import Status
+from pySpaceTraders.models.systems import System, SystemList
+from pySpaceTraders.models.waypoints import Waypoint, WaypointList
 
 
 @dataclass
 class PySpaceParser:
     ApiInstance: Any
+    config: Optional[Config] | None = None
+
+    def __post_init__(self):
+        self.config = Config(
+            cast=[
+                ActivityLevel,
+                ContractType,
+                DepositSymbol,
+                FactionTraitSymbol,
+                FactionSymbol,
+                ShipConditionEventSymbol,
+                ShipEngineSymbol,
+                ShipFrameSymbol,
+                ShipModuleSymbol,
+                ShipMountSymbol,
+                ShipNavStatus,
+                ShipNavFlightMode,
+                ShipReactorSymbol,
+                ShipRole,
+                ShipType,
+                SupplyLevel,
+                SystemType,
+                TradeSymbol,
+                WaypointModifierSymbol,
+                WaypointTraitSymbol,
+                WaypointType,
+            ]
+        )
+
+    @staticmethod
+    def rename_yield_attr(response_dict: dict) -> dict:
+        """Since yield is a keyword, got to rename it or else Python gets mad."""
+        if "yield" in response_dict:
+            response_dict["amount"] = response_dict["yield"]
+            del response_dict["yield"]
+        return response_dict
+
+    def response_to_class(self, obj_class, response_dict: dict):
+        return from_dict(obj_class, self.rename_yield_attr(response_dict), config=self.config)
 
     ##############################
     # --- Multi Dict Parsers --- #
     ##############################
 
-    def contract_cargo(self, contract_cargo_dict: dict) -> contracts.Deliver:
+    def contract_cargo(self, contract_cargo_dict: dict) -> Deliver:
         contract_cargo_dict = contract_cargo_dict["data"] if "data" in contract_cargo_dict else contract_cargo_dict
-        contract_cargo_dict["contract"] = self.contract(contract_cargo_dict["contract"])
-        contract_cargo_dict["cargo"] = self.cargo(contract_cargo_dict["cargo"])
-        return from_dict(contracts.Deliver, contract_cargo_dict)
 
-    def contract_agent(self, contract_agent_dict: dict) -> contracts.ContractAgent:
+        return self.response_to_class(Deliver, contract_cargo_dict)
+
+    def contract_agent(self, contract_agent_dict: dict) -> ContractAgent:
         contract_agent_dict = contract_agent_dict["data"] if "data" in contract_agent_dict else contract_agent_dict
 
-        contract_agent_dict["agent"] = self.agent(contract_agent_dict["agent"])
-        contract_agent_dict["contract"] = self.contract(contract_agent_dict["contract"])
-        return from_dict(contracts.ContractAgent, contract_agent_dict)
+        return self.response_to_class(ContractAgent, contract_agent_dict)
 
-    def construction_supply(self, construction_cargo_dict: dict) -> constructionsites.ConstructionSiteSupplyResponse:
-        construction_cargo_dict = (
-            construction_cargo_dict["data"] if "data" in construction_cargo_dict else construction_cargo_dict
-        )
+    def construction_supply(self, cons_cargo_dict: dict) -> ConstructionSiteSupplyResponse:
+        cons_cargo_dict = cons_cargo_dict["data"] if "data" in cons_cargo_dict else cons_cargo_dict
 
-        return from_dict(constructionsites.ConstructionSiteSupplyResponse, construction_cargo_dict)
+        return self.response_to_class(ConstructionSiteSupplyResponse, cons_cargo_dict)
 
     ########################
     # --- List Parsers --- #
     ########################
 
-    def contract_list(self, contract_meta_dict: dict) -> contracts.ListResponse:
+    def contract_list(self, contract_meta_dict: dict) -> ContractList:
         for contract in contract_meta_dict["data"]:
             contract["ApiInstance"] = self.ApiInstance
-        return from_dict(
-            contracts.ListResponse,
-            {
-                "contracts": contract_meta_dict["data"],
-                "meta": contract_meta_dict["meta"],
-            },
-        )
+        return self.response_to_class(ContractList, contract_meta_dict)
 
-    @staticmethod
-    def faction_list(faction_dict: dict) -> factions.ListResponse:
-        return from_dict(
-            factions.ListResponse,
-            {"factions": faction_dict["data"], "meta": faction_dict["meta"]},
-        )
+    def faction_list(self, faction_dict: dict) -> FactionList:
+        return self.response_to_class(FactionList, faction_dict)
 
-    @staticmethod
-    def agent_list(agent_meta_dict: dict) -> agents.ListResponse:
-        return from_dict(
-            agents.ListResponse,
-            {"agents": agent_meta_dict["data"], "meta": agent_meta_dict["meta"]},
-        )
+    def agent_list(self, agent_meta_dict: dict) -> AgentList:
+        return self.response_to_class(AgentList, agent_meta_dict)
 
-    @staticmethod
-    def system_list(system_meta_dict: dict) -> systems.ListResponse:
-        return from_dict(
-            systems.ListResponse,
-            {"systems": system_meta_dict["data"], "meta": system_meta_dict["meta"]},
-        )
+    def system_list(self, system_meta_dict: dict) -> SystemList:
+        return self.response_to_class(SystemList, system_meta_dict)
 
-    @staticmethod
-    def system_waypoints_list(system_waypoint_meta_dict: dict) -> waypoints.ListResponse:
-        return from_dict(
-            waypoints.ListResponse,
-            {"waypoints": system_waypoint_meta_dict["data"], "meta": system_waypoint_meta_dict["meta"]},
-        )
+    def system_waypoints_list(self, system_waypoint_meta_dict: dict) -> WaypointList:
+        return self.response_to_class(WaypointList, system_waypoint_meta_dict)
 
-    @staticmethod
-    def ship_list(ship_list_dict: dict) -> ships.ListResponse:
-
-        return from_dict(ships.ListResponse, {"ships": ship_list_dict["data"], "meta": ship_list_dict["meta"]})
+    def ship_list(self, ships_meta_dict: dict) -> ShipList:
+        return self.response_to_class(ShipList, ships_meta_dict)
 
     ###############################
     # --- Single Dict Parsers --- #
     ###############################
 
-    @staticmethod
-    def error(error_dict: dict) -> errors.Error:
+    def error(self, error_dict: dict) -> Error:
         error_dict = error_dict["error"]
-        code = error_dict["code"]
-        error = errors.Codes(code).name
+        error = Codes(error_dict["code"]).name
         message = error_dict["message"]
-        return from_dict(errors.Error, {"error": error, "message": message})
+        return self.response_to_class(Error, {"error": error, "message": message})
 
-    def contract(self, contract_dict: dict) -> contracts.Contract:
+    def contract(self, contract_dict: dict) -> Contract:
         contract_dict = contract_dict["data"] if "data" in contract_dict else contract_dict
         contract_dict["ApiInstance"] = self.ApiInstance
 
-        return from_dict(contracts.Contract, contract_dict)
+        return self.response_to_class(Contract, contract_dict)
 
-    @staticmethod
-    def cargo(cargo_dict: dict) -> cargo.Cargo:
+    def cargo(self, cargo_dict: dict) -> Cargo:
         cargo_dict = cargo_dict["data"] if "data" in cargo_dict else cargo_dict
 
-        return from_dict(cargo.Cargo, cargo_dict)
+        return self.response_to_class(Cargo, cargo_dict)
 
-    @staticmethod
-    def faction(faction_dict: dict) -> factions.Faction:
+    def faction(self, faction_dict: dict) -> Faction:
         faction_dict = faction_dict["data"] if "data" in faction_dict else faction_dict
 
-        return from_dict(factions.Faction, faction_dict)
+        return self.response_to_class(Faction, faction_dict)
 
-    @staticmethod
-    def status(status_dict: dict) -> status.Status:
+    def status(self, status_dict: dict) -> Status:
         status_dict = status_dict["data"] if "data" in status_dict else status_dict
 
-        return from_dict(status.Status, status_dict)
+        return self.response_to_class(Status, status_dict)
 
-    @staticmethod
-    def agent(agent_dict: dict) -> agents.Agent:
+    def agent(self, agent_dict: dict) -> Agent:
         agent_dict = agent_dict["data"] if "data" in agent_dict else agent_dict
 
-        return from_dict(agents.Agent, agent_dict)
+        return self.response_to_class(Agent, agent_dict)
 
-    @staticmethod
-    def system(system_dict: dict) -> systems.System:
+    def system(self, system_dict: dict) -> System:
         system_dict = system_dict["data"] if "data" in system_dict else system_dict
 
-        return from_dict(systems.System, system_dict)
+        return self.response_to_class(System, system_dict)
 
-    @staticmethod
-    def waypoint(waypoint_dict: dict) -> waypoints.Waypoint:
+    def waypoint(self, waypoint_dict: dict) -> Waypoint:
         waypoint_dict = waypoint_dict["data"] if "data" in waypoint_dict else waypoint_dict
 
-        return from_dict(waypoints.Waypoint, waypoint_dict)
+        return self.response_to_class(Waypoint, waypoint_dict)
 
-    @staticmethod
-    def market(market_dict: dict) -> markets.Market:
+    def market(self, market_dict: dict) -> Market:
         market_dict = market_dict["data"] if "data" in market_dict else market_dict
 
-        return from_dict(markets.Market, market_dict)
+        return self.response_to_class(Market, market_dict)
 
-    @staticmethod
-    def shipyard(shipyard_dict: dict) -> shipyards.Shipyard:
+    def shipyard(self, shipyard_dict: dict) -> Shipyard:
         shipyard_dict = shipyard_dict["data"] if "data" in shipyard_dict else shipyard_dict
 
-        return from_dict(shipyards.Shipyard, shipyard_dict)
+        return self.response_to_class(Shipyard, shipyard_dict)
 
-    @staticmethod
-    def jumpgate(jumpgate_dict: dict) -> jumpgates.JumpGate:
+    def jumpgate(self, jumpgate_dict: dict) -> JumpGate:
         jumpgate_dict = jumpgate_dict["data"] if "data" in jumpgate_dict else jumpgate_dict
         if "connections" in jumpgate_dict and not jumpgate_dict["connections"]:
             jumpgate_dict["connections"] = [""]
 
-        return from_dict(jumpgates.JumpGate, jumpgate_dict)
+        return self.response_to_class(JumpGate, jumpgate_dict)
 
-    @staticmethod
-    def construction_site(construction_site_dict: dict) -> constructionsites.ConstructionSite:
-        construction_site_dict = (
-            construction_site_dict["data"] if "data" in construction_site_dict else construction_site_dict
-        )
+    def construction_site(self, cons_site_dict: dict) -> ConstructionSite:
+        cons_site_dict = cons_site_dict["data"] if "data" in cons_site_dict else cons_site_dict
 
-        return from_dict(constructionsites.ConstructionSite, construction_site_dict)
+        return self.response_to_class(ConstructionSite, cons_site_dict)
+
+    def ship(self, ship_dict: dict) -> Ship:
+        ship_dict = ship_dict["data"] if "data" in ship_dict else ship_dict
+
+        return self.response_to_class(Ship, ship_dict)

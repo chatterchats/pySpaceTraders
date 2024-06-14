@@ -81,7 +81,7 @@ class SpaceTraderClient:
 
         # Make sure faction_dict is recruiting
         factions_list = self.list_factions(all_factions=True)
-        if type(factions_list) is factions.ListResponse:
+        if type(factions_list) is factions.FactionList:
             for faction in factions_list.factions:
                 if faction.symbol == self.agent_faction and not faction.isRecruiting:
                     raise ValueError(f"`{self.agent_faction.value}` Faction is not recruiting new agents at this time.")
@@ -125,9 +125,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.agent(response)
 
-    def list_agents(
-        self, limit: int = 20, page: int = 1, all_agents: bool = False
-    ) -> agents.ListResponse | errors.Error:
+    def list_agents(self, limit: int = 20, page: int = 1, all_agents: bool = False) -> agents.AgentList | errors.Error:
         """List all_factions agents. (Paginated)"""
         # token optional for get_agent
         query = {"limit": 20 if all_agents else limit, "page": page}
@@ -159,7 +157,7 @@ class SpaceTraderClient:
     # Contracts Endpoints #
     def list_contracts(
         self, limit: int = 20, page: int = 1, all_contracts: bool = False
-    ) -> contracts.ListResponse | errors.Error:
+    ) -> contracts.ContractList | errors.Error:
         """Paginated list all contracts agent has (Paginated)"""
         query = {"limit": 20 if all_contracts else limit, "page": page}
         response = self.request.api("GET", "/my/contracts", query_params=query)
@@ -220,7 +218,7 @@ class SpaceTraderClient:
     # Faction Endpoints #
     def list_factions(
         self, limit: int = 20, page: int = 1, all_factions: bool = False
-    ) -> factions.ListResponse | errors.Error:
+    ) -> factions.FactionList | errors.Error:
         """List factions in the game. (Paginated)"""
         query = {"limit": 20 if all_factions else limit, "page": page}
         response = self.request.api("GET", "/factions", query_params=query)
@@ -244,7 +242,7 @@ class SpaceTraderClient:
 
     def list_systems(
         self, limit: int = 20, page: int = 1, all_systems: bool = False, confirm_all: bool = True
-    ) -> systems.ListResponse | errors.Error:
+    ) -> systems.SystemList | errors.Error:
         """List systems in the game. (Paginated)"""
         query = {"limit": 20 if all_systems else limit, "page": page}
         response = self.request.api("GET", "/systems", query_params=query)
@@ -272,7 +270,7 @@ class SpaceTraderClient:
         traits: WaypointTraitSymbol | List[WaypointTraitSymbol] | None = None,
         waypoint_type: WaypointType | None = None,
         all_waypoints: bool = False,
-    ) -> waypoints.ListResponse | errors.Error:
+    ) -> waypoints.WaypointList | errors.Error:
         """List waypoints for specified system. (Paginated)"""
         limit = 20 if all_waypoints else limit
         query = {

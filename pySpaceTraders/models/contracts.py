@@ -22,13 +22,10 @@ class PaymentTerm:
 class DeliverTerms:
     """Represents the delivery requirements of a contract."""
 
-    tradeSymbol: str
+    tradeSymbol: TradeSymbol
     destinationSymbol: str
     unitsRequired: int
     unitsFulfilled: int
-
-    def __post_init__(self):
-        self.tradeSymbol = TradeSymbol(self.tradeSymbol)
 
 
 @dataclass
@@ -45,8 +42,8 @@ class Contract:
     """Base Contract Class, represents a single contract."""
 
     id: str
-    factionSymbol: str
-    type: str
+    factionSymbol: FactionSymbol
+    type: ContractType
     terms: Terms
     accepted: bool
     fulfilled: bool
@@ -54,25 +51,12 @@ class Contract:
     deadlineToAccept: Optional[str]
     ApiInstance: Any
 
-    def __post_init__(self):
-        self.factionSymbol = FactionSymbol(self.factionSymbol)
-        self.type = ContractType(self.type)
-
     def update_contract(self, contract_in) -> None:
-        """
-
-        :param Contract contract_in:
-        :return:
-        """
         for k, v in contract_in.__dict__.items():
             setattr(self, k, v)
         print("Contract Updated")
 
     def accept(self) -> bool:
-        """
-        Accepts the contract
-        :return: True if accepted, False if already accepted or if API returns an error.
-        """
         if self.accepted:
             return False
         else:
@@ -87,16 +71,6 @@ class Contract:
         return False
 
     def deliver(self, ship_symbol: str, trade_symbol: TradeSymbol, units: int) -> bool:
-        """
-        Delivers the trade good for the contract. Will automatically lower amount to the amount required for the delivery if specified
-        amount is more than required.
-        :param str ship_symbol:
-        :param TradeSymbol trade_symbol:
-        :param int units:
-        :return: True if delivery made, False if invalid trade_symbol,
-        :raises: ValueError if invalid trade_symbol.
-
-        """
         for delivery in self.terms.deliver:
             if delivery.tradeSymbol == trade_symbol:
                 remaining = delivery.unitsRequired - delivery.unitsFulfilled
@@ -134,8 +108,8 @@ class ContractAgent:
 
 
 @dataclass
-class ListResponse:
+class ContractList:
     """Represents a status_dict containing a list of contracts and associated metadata."""
 
-    contracts: List[Contract]
+    data: List[Contract]
     meta: ListMeta
