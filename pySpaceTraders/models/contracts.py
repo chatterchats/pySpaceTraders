@@ -1,11 +1,12 @@
 """Contract Models"""
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
+from typing import List, Any, Optional
 
 from pySpaceTraders.models.agents import Agent
 from pySpaceTraders.models.cargo import Cargo
 from pySpaceTraders.models.enums import *
+from pySpaceTraders.models.errors import Error
 from pySpaceTraders.models.general import ListMeta
 
 
@@ -21,10 +22,13 @@ class PaymentTerm:
 class DeliverTerms:
     """Represents the delivery requirements of a contract."""
 
-    tradeSymbol: TradeSymbol
+    tradeSymbol: str
     destinationSymbol: str
     unitsRequired: int
     unitsFulfilled: int
+
+    def __post_init__(self):
+        self.tradeSymbol = TradeSymbol(self.tradeSymbol)
 
 
 @dataclass
@@ -41,7 +45,7 @@ class Contract:
     """Base Contract Class, represents a single contract."""
 
     id: str
-    factionSymbol: FactionSymbol
+    factionSymbol: str
     type: str
     terms: Terms
     accepted: bool
@@ -49,6 +53,10 @@ class Contract:
     expiration: str
     deadlineToAccept: Optional[str]
     ApiInstance: Any
+
+    def __post_init__(self):
+        self.factionSymbol = FactionSymbol(self.factionSymbol)
+        self.type = ContractType(self.type)
 
     def update_contract(self, contract_in) -> None:
         """
@@ -58,6 +66,7 @@ class Contract:
         """
         for k, v in contract_in.__dict__.items():
             setattr(self, k, v)
+        print("Contract Updated")
 
     def accept(self) -> bool:
         """
@@ -68,10 +77,12 @@ class Contract:
             return False
         else:
             response = self.ApiInstance.accept_contract(self.id)
+            print(response)
             if response is ContractAgent:
                 self.update_contract(response.contract)
                 return True
-            elif "error" in response:
+            elif response is Error:
+                print(Error)
                 return False
         return False
 
@@ -104,13 +115,6 @@ class Contract:
             response = self.ApiInstance.fulfill_contract(self.id)
             if response is ContractAgent:
                 self.update_contract(response.contract)
-
-
-@dataclass
-class Response:
-    """Represents the status_dict containing contract data."""
-
-    data: Contract
 
 
 @dataclass

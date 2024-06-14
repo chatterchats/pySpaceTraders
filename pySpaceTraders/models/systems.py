@@ -10,11 +10,15 @@ from pySpaceTraders.models.waypoints import SystemWaypoint
 class System:
     symbol: str
     sectorSymbol: str
-    type: SystemType
+    type: str
     x: int
     y: int
     waypoints: List[SystemWaypoint]
-    factions: List[FactionSymbol]
+    factions: List[str]
+
+    def __post_init__(self):
+        self.type = SystemType(self.type)
+        self.factions = [FactionSymbol(faction) for faction in self.factions]
 
 
 @dataclass

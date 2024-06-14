@@ -8,30 +8,42 @@ from pySpaceTraders.models.ships import ShipFrame, ShipReactor, ShipModule, Ship
 @dataclass
 class ShipyardTransaction:
     waypointSymbol: str
-    shipSymbol: ShipType  # TODO: Make parser remove this as it is deprecated but still returned
-    shipType: ShipType
+    shipSymbol: str
+    shipType: str
     price: int
     agentSymbol: str
     timestamp: str
 
+    def __post_init__(self):
+        self.shipSymbol = ShipType(self.shipType)  # Assigned Same as ShipSymbol is Deprecated, but is same data as shipType
+        self.shipType = ShipType(self.shipType)
 
 @dataclass
 class ShipyardShip:
-    type: ShipType
+    type: str
     name: str
     description: str
-    supply: SupplyLevel
-    activity: ActivityLevel
+    supply: str
+    activity: str
     purchasePrice: int
     frame: ShipFrame
     reactor: ShipReactor
     modules: List[ShipModule]
     mounts: List[ShipMount]
 
+    def __post_init__(self):
+        self.type = ShipType(self.type)
+        self.supply = SupplyLevel(self.supply)
+        self.activity = ActivityLevel(self.activity)
+
+
 
 @dataclass
 class ShipyardShipType:
-    type: ShipType
+    type: str
+
+    def __post_init__(self):
+        self.type = ShipType(self.type)
 
 
 @dataclass

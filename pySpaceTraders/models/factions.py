@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 from typing import List, Dict
 
+from pySpaceTraders.models.enums import FactionSymbol, FactionTraitSymbol
+
 
 @dataclass
 class Trait:
     symbol: str
     name: str
     description: str
+
+    def __post_init__(self):
+        self.symbol = FactionTraitSymbol[self.symbol]
 
 
 @dataclass
@@ -18,10 +23,8 @@ class Faction:
     traits: List[Trait]
     isRecruiting: bool
 
-
-@dataclass
-class Response:
-    data: List[Faction]
+    def __post_init__(self):
+        self.symbol = FactionSymbol(self.symbol)
 
 
 @dataclass

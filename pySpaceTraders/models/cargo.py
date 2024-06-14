@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
+from pySpaceTraders.models.enums import TradeSymbol
+
 
 @dataclass
 class Item:
@@ -8,6 +10,9 @@ class Item:
     name: str
     description: str
     units: int
+
+    def __post_init__(self):
+        self.symbol = TradeSymbol(self.symbol)
 
 
 @dataclass

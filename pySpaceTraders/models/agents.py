@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from pySpaceTraders.models.enums import FactionSymbol
 from pySpaceTraders.models.general import ListMeta
 
 
@@ -12,6 +13,9 @@ class Agent:
     startingFaction: str
     shipCount: int
     accountId: Optional[str]
+
+    def __post_init__(self):
+        self.startingFaction = FactionSymbol(self.startingFaction)
 
 
 @dataclass

@@ -7,9 +7,12 @@ from pySpaceTraders.models.enums import TradeSymbol
 
 @dataclass
 class ConstructionMaterial:
-    tradeSymbol: TradeSymbol
+    tradeSymbol: str
     required: int
     fulfilled: int
+
+    def __post_init__(self):
+        self.tradeSymbol = TradeSymbol(self.tradeSymbol)
 
 
 @dataclass
