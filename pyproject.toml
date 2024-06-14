@@ -33,3 +33,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/chatterchats/pySpaceTrader"
 Issues = "https://github.com/chatterchats/pySpaceTrader/issues"
+
+[tool.pyright]
+verboseOutput = true
+pythonPlatform = "All"
+typeCheckingMode = "standard"
+reportCallIssue = false
