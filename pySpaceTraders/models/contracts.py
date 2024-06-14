@@ -3,11 +3,8 @@
 from dataclasses import dataclass
 from typing import List, Any, Optional
 
-from pySpaceTraders.models.agents import Agent
-from pySpaceTraders.models.cargo import Cargo
 from pySpaceTraders.models.enums import *
-from pySpaceTraders.models.errors import Error
-from pySpaceTraders.models.general import ListMeta
+from pySpaceTraders.models.responses import ContractAgent, Error
 
 
 @dataclass
@@ -89,27 +86,3 @@ class Contract:
             response = self.ApiInstance.fulfill_contract(self.id)
             if response is ContractAgent:
                 self.update_contract(response.contract)
-
-
-@dataclass
-class Deliver:
-    """Represents the status_dict given when cargo is delivered as part of a contract."""
-
-    contract: Contract
-    cargo: Cargo
-
-
-@dataclass
-class ContractAgent:
-    """Represents the status_dict under the "data" key containing an agent and contract data."""
-
-    agent: Agent
-    contract: Contract
-
-
-@dataclass
-class ContractList:
-    """Represents a status_dict containing a list of contracts and associated metadata."""
-
-    data: List[Contract]
-    meta: ListMeta

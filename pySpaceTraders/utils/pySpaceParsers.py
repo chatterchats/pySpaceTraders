@@ -9,10 +9,10 @@ from typing import Any, Optional
 
 from dacite import from_dict, Config
 
-from pySpaceTraders.models.agents import AgentList, Agent
+from pySpaceTraders.models.agents import Agent
 from pySpaceTraders.models.cargo import Cargo
-from pySpaceTraders.models.constructionsites import ConstructionSite, ConstructionSiteSupplyResponse
-from pySpaceTraders.models.contracts import ContractList, Contract, ContractAgent, Deliver
+from pySpaceTraders.models.constructionsites import ConstructionSite
+from pySpaceTraders.models.contracts import Contract
 from pySpaceTraders.models.enums import (
     ActivityLevel,
     ContractType,
@@ -36,15 +36,36 @@ from pySpaceTraders.models.enums import (
     WaypointTraitSymbol,
     WaypointType,
 )
-from pySpaceTraders.models.errors import Error, Codes
-from pySpaceTraders.models.factions import FactionList, Faction
+from pySpaceTraders.models.errors import Codes
+from pySpaceTraders.models.factions import Faction
 from pySpaceTraders.models.jumpgates import JumpGate
 from pySpaceTraders.models.markets import Market
-from pySpaceTraders.models.ships import Ship, ShipList
+from pySpaceTraders.models.responses import (
+    ContractDeliver,
+    ContractAgent,
+    ConstructionSiteSupplyResponse,
+    ContractList,
+    FactionList,
+    AgentList,
+    SystemList,
+    WaypointList,
+    ShipList,
+    Error,
+    PurchaseShip,
+    CreateChart,
+    CreateSurvey,
+    ShipExtract,
+)
+from pySpaceTraders.models.ships import (
+    Ship,
+    ShipNav,
+    ShipCooldown,
+    ShipSiphon,
+)
 from pySpaceTraders.models.shipyards import Shipyard
 from pySpaceTraders.models.status import Status
-from pySpaceTraders.models.systems import System, SystemList
-from pySpaceTraders.models.waypoints import Waypoint, WaypointList
+from pySpaceTraders.models.systems import System
+from pySpaceTraders.models.waypoints import Waypoint
 
 
 @dataclass
@@ -83,7 +104,7 @@ class PySpaceParser:
     def rename_yield_attr(response_dict: dict) -> dict:
         """Since yield is a keyword, got to rename it or else Python gets mad."""
         if "yield" in response_dict:
-            response_dict["amount"] = response_dict["yield"]
+            response_dict["yields"] = response_dict["yield"]
             del response_dict["yield"]
         return response_dict
 
@@ -94,10 +115,10 @@ class PySpaceParser:
     # --- Multi Dict Parsers --- #
     ##############################
 
-    def contract_cargo(self, contract_cargo_dict: dict) -> Deliver:
+    def contract_cargo(self, contract_cargo_dict: dict) -> ContractDeliver:
         contract_cargo_dict = contract_cargo_dict["data"] if "data" in contract_cargo_dict else contract_cargo_dict
 
-        return self.response_to_class(Deliver, contract_cargo_dict)
+        return self.response_to_class(ContractDeliver, contract_cargo_dict)
 
     def contract_agent(self, contract_agent_dict: dict) -> ContractAgent:
         contract_agent_dict = contract_agent_dict["data"] if "data" in contract_agent_dict else contract_agent_dict
@@ -205,3 +226,40 @@ class PySpaceParser:
         ship_dict = ship_dict["data"] if "data" in ship_dict else ship_dict
 
         return self.response_to_class(Ship, ship_dict)
+
+    def purchase_ship(self, purchase_ship_dict) -> PurchaseShip:
+        purchase_ship_dict = purchase_ship_dict["data"] if "data" in purchase_ship_dict else purchase_ship_dict
+        return self.response_to_class(PurchaseShip, purchase_ship_dict)
+
+    def navigation(self, navigation_dict: dict) -> ShipNav:
+        navigation_dict = (
+            navigation_dict["data"]["nav"]
+            if "data" in navigation_dict and "nav" in navigation_dict.get("Nav", {})
+            else navigation_dict
+        )
+
+        return self.response_to_class(ShipNav, navigation_dict)
+
+    def create_chart(self, chart_dict: dict) -> CreateChart:
+        chart_dict = chart_dict["data"] if "data" in chart_dict else chart_dict
+
+        return self.response_to_class(CreateChart, chart_dict)
+
+    def cooldown(self, cooldown_dict: dict) -> ShipCooldown:
+        cooldown_dict = cooldown_dict["data"] if "data" in cooldown_dict else cooldown_dict
+
+        return self.response_to_class(ShipCooldown, cooldown_dict)
+
+    def create_survey(self, survey_dict: dict) -> CreateSurvey:
+        survey_dict = survey_dict["data"] if "data" in survey_dict else survey_dict
+        return self.response_to_class(CreateSurvey, survey_dict)
+
+    def extract_resources(self, extract_dict: dict) -> ShipExtract:  # survey_extract_resources
+        extract_dict = extract_dict["data"] if "data" in extract_dict else extract_dict
+
+        return self.response_to_class(ShipExtract, extract_dict)
+
+    def siphon_resources(self, siphon_dict: dict) -> ShipSiphon:
+        siphon_dict = siphon_dict["data"] if "data" in siphon_dict else siphon_dict
+
+        return self.response_to_class(ShipSiphon, siphon_dict)

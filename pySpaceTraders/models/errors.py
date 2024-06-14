@@ -1,11 +1,4 @@
-from dataclasses import dataclass
 from enum import Enum
-
-
-@dataclass
-class Error:
-    error: str
-    message: str
 
 
 class Codes(Enum):

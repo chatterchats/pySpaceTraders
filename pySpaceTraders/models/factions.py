@@ -20,9 +20,3 @@ class Faction:
     headquarters: str
     traits: List[Trait]
     isRecruiting: bool
-
-
-@dataclass
-class FactionList:
-    data: List[Faction]
-    meta: ListMeta

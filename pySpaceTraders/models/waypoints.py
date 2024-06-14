@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from pySpaceTraders.models.enums import FactionSymbol, WaypointType, WaypointTraitSymbol, WaypointModifierSymbol
-from pySpaceTraders.models.general import ListMeta
 
 
 @dataclass
@@ -54,9 +53,3 @@ class Waypoint(SystemWaypoint):
     faction: Optional[WaypointFactionSymbol]
     modifiers: Optional[List[WaypointModifier]]
     chart: Optional[Chart]
-
-
-@dataclass
-class WaypointList:
-    waypoints: List[Waypoint]
-    meta: ListMeta

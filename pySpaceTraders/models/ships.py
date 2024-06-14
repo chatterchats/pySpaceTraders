@@ -15,8 +15,8 @@ from pySpaceTraders.models.enums import (
     TradeSymbol,
     DepositSymbol,
     WaypointType,
+    ShipConditionEventSymbol,
 )
-from pySpaceTraders.models.general import ListMeta
 
 
 @dataclass
@@ -152,6 +152,14 @@ class ShipRefineIO:
 
 
 @dataclass
+class ShipRefine:
+    cargo: Cargo
+    cooldown: ShipCooldown
+    produced: ShipRefineIO
+    consumed: ShipRefineIO
+
+
+@dataclass
 class ShipExtractionYield:
     symbol: TradeSymbol
     units: int
@@ -169,12 +177,40 @@ class ShipDeposit:
 
 
 @dataclass
+class ShipEvent:
+    symbol: ShipConditionEventSymbol
+    component: str
+    name: str
+    description: str
+
+
+@dataclass
 class Survey:
     signature: str
     symbol: str
     deposits: List[ShipDeposit]
     expiration: str
     size: str
+
+
+@dataclass
+class ShipSiphonYields:
+    symbol: TradeSymbol
+    units: int
+
+
+@dataclass
+class ShipSiphon:
+    shipSymbol: str
+    yields: ShipSiphonYields
+
+
+@dataclass
+class ShipSiphonGas:
+    cooldown: ShipCooldown
+    siphon: ShipSiphon
+    cargo: Cargo
+    events: List[ShipEvent]
 
 
 @dataclass
@@ -190,9 +226,3 @@ class Ship:
     mounts: List[ShipMount]
     cargo: Cargo
     fuel: ShipFuel
-
-
-@dataclass
-class ShipList:
-    data: List[Ship]
-    meta: ListMeta

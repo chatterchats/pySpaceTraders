@@ -3,19 +3,26 @@ import math
 import os.path
 from typing import List
 
-from pySpaceTraders.models import (
-    agents,
-    contracts,
-    factions,
-    errors,
-    systems,
-    waypoints,
-    markets,
-    shipyards,
-    jumpgates,
-    constructionsites,
-)
+from pySpaceTraders.models.agents import Agent
+from pySpaceTraders.models.constructionsites import ConstructionSite
+from pySpaceTraders.models.contracts import Contract
 from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, WaypointType, WaypointTraitSymbol
+from pySpaceTraders.models.factions import Faction
+from pySpaceTraders.models.jumpgates import JumpGate
+from pySpaceTraders.models.markets import Market
+from pySpaceTraders.models.responses import (
+    Error,
+    WaypointList,
+    SystemList,
+    FactionList,
+    ContractAgent,
+    ContractDeliver,
+    ContractList,
+    AgentList,
+)
+from pySpaceTraders.models.shipyards import Shipyard
+from pySpaceTraders.models.systems import System
+from pySpaceTraders.models.waypoints import Waypoint
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
 from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
@@ -79,12 +86,10 @@ class SpaceTraderClient:
                 f"Agent Symbol `{self.agent_symbol}` has a length of {len(self.agent_symbol)}. Length must be >= 3 and <=14."
             )
 
-        # Make sure faction_dict is recruiting
-        factions_list = self.list_factions(all_factions=True)
-        if type(factions_list) is factions.FactionList:
-            for faction in factions_list.factions:
-                if faction.symbol == self.agent_faction and not faction.isRecruiting:
-                    raise ValueError(f"`{self.agent_faction.value}` Faction is not recruiting new agents at this time.")
+        # Make sure faction is recruiting
+        faction = self.get_faction(self.agent_faction)
+        if isinstance(faction, Faction) and faction.symbol == self.agent_faction and not faction.isRecruiting:
+            raise ValueError(f"`{self.agent_faction.value}` Faction is not recruiting new agents at this time.")
 
         self.logger.debug("Agent Symbol and Faction Valid")
         json_data = {
@@ -118,15 +123,15 @@ class SpaceTraderClient:
         return self.parser.status(response)
 
     # Agent Endpoints #
-    def my_agent(self) -> agents.Agent | errors.Error:
+    def my_agent(self) -> Agent | Error:
         """Fetch your agent's details"""
         response = self.request.api("GET", "/my/agent")
         if "error" in response:
             return self.parser.error(response)
         return self.parser.agent(response)
 
-    def list_agents(self, limit: int = 20, page: int = 1, all_agents: bool = False) -> agents.AgentList | errors.Error:
-        """List all_factions agents. (Paginated)"""
+    def list_agents(self, limit: int = 20, page: int = 1, all_agents: bool = False) -> AgentList | Error:
+        """List all_factions  (Paginated)"""
         # token optional for get_agent
         query = {"limit": 20 if all_agents else limit, "page": page}
         response = self.request.api("GET", "/agents", query_params=query)
@@ -142,7 +147,7 @@ class SpaceTraderClient:
 
         return self.parser.agent_list(response)
 
-    def get_agent(self, symbol: str = "CHATS") -> agents.Agent | errors.Error:
+    def get_agent(self, symbol: str = "CHATS") -> Agent | Error:
         """Fetch single agent details."""
         # token optional for get_agent
         response = self.request.api(
@@ -155,9 +160,7 @@ class SpaceTraderClient:
         return self.parser.agent(response)
 
     # Contracts Endpoints #
-    def list_contracts(
-        self, limit: int = 20, page: int = 1, all_contracts: bool = False
-    ) -> contracts.ContractList | errors.Error:
+    def list_contracts(self, limit: int = 20, page: int = 1, all_contracts: bool = False) -> ContractList | Error:
         """Paginated list all contracts agent has (Paginated)"""
         query = {"limit": 20 if all_contracts else limit, "page": page}
         response = self.request.api("GET", "/my/contracts", query_params=query)
@@ -173,7 +176,7 @@ class SpaceTraderClient:
 
         return self.parser.contract_list(response)
 
-    def get_contract(self, contract_id: str) -> contracts.Contract | errors.Error:
+    def get_contract(self, contract_id: str) -> Contract | Error:
         """Fetch single contract details"""
         # token optional for get_agent
 
@@ -182,7 +185,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.contract(response)
 
-    def accept_contract(self, contract_id: str) -> contracts.ContractAgent | errors.Error:
+    def accept_contract(self, contract_id: str) -> ContractAgent | Error:
         """Accept a contract."""
 
         response = self.request.api("POST", "/my/contracts/{}/accept", path_param=[contract_id])
@@ -194,8 +197,8 @@ class SpaceTraderClient:
 
     def deliver_contract_cargo(
         self, contract_id: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
-    ) -> contracts.Deliver | errors.Error:
-        """Deliver cargo for a given contract."""
+    ) -> ContractDeliver | Error:
+        """ContractDeliver cargo for a given contract."""
         data = {
             "ship_symbol": ship_symbol,
             "trade_symbol": trade_symbol,
@@ -207,7 +210,7 @@ class SpaceTraderClient:
 
         return self.parser.contract_cargo(response)
 
-    def fulfill_contract(self, contract_id: str) -> contracts.ContractAgent | errors.Error:
+    def fulfill_contract(self, contract_id: str) -> ContractAgent | Error:
         """Fulfill (complete) a contract."""
         response = self.request.api("POST", "/my/contracts/{}/fulfill", path_param=contract_id)
         if "error" in response:
@@ -216,9 +219,7 @@ class SpaceTraderClient:
         return self.parser.contract_agent(response)
 
     # Faction Endpoints #
-    def list_factions(
-        self, limit: int = 20, page: int = 1, all_factions: bool = False
-    ) -> factions.FactionList | errors.Error:
+    def list_factions(self, limit: int = 20, page: int = 1, all_factions: bool = False) -> FactionList | Error:
         """List factions in the game. (Paginated)"""
         query = {"limit": 20 if all_factions else limit, "page": page}
         response = self.request.api("GET", "/factions", query_params=query)
@@ -232,7 +233,7 @@ class SpaceTraderClient:
 
         return self.parser.faction_list(response)
 
-    def get_faction(self, faction_symbol: FactionSymbol) -> factions.Faction | errors.Error:
+    def get_faction(self, faction_symbol: FactionSymbol) -> Faction | Error:
         """View the details of a faction."""
         response = self.request.api("GET", "/factions", path_param=faction_symbol)
         if "error" in response:
@@ -242,7 +243,7 @@ class SpaceTraderClient:
 
     def list_systems(
         self, limit: int = 20, page: int = 1, all_systems: bool = False, confirm_all: bool = True
-    ) -> systems.SystemList | errors.Error:
+    ) -> SystemList | Error:
         """List systems in the game. (Paginated)"""
         query = {"limit": 20 if all_systems else limit, "page": page}
         response = self.request.api("GET", "/systems", query_params=query)
@@ -255,7 +256,7 @@ class SpaceTraderClient:
             response["meta"]["limit"] = len(response["data"])
         return self.parser.system_list(response)
 
-    def get_system(self, system_symbol: str) -> systems.System | errors.Error:
+    def get_system(self, system_symbol: str) -> System | Error:
         """Get the details of a system."""
         response = self.request.api("GET", "/systems", path_param=system_symbol.upper())
         if "error" in response:
@@ -270,7 +271,7 @@ class SpaceTraderClient:
         traits: WaypointTraitSymbol | List[WaypointTraitSymbol] | None = None,
         waypoint_type: WaypointType | None = None,
         all_waypoints: bool = False,
-    ) -> waypoints.WaypointList | errors.Error:
+    ) -> WaypointList | Error:
         """List waypoints for specified system. (Paginated)"""
         limit = 20 if all_waypoints else limit
         query = {
@@ -309,7 +310,7 @@ class SpaceTraderClient:
             response["meta"]["limit"] = len(response["data"])
         return self.parser.system_waypoints_list(response)
 
-    def get_waypoint(self, waypoint_symbol: str) -> waypoints.Waypoint | errors.Error:
+    def get_waypoint(self, waypoint_symbol: str) -> Waypoint | Error:
         """Get single waypoint details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
@@ -321,7 +322,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.waypoint(response)
 
-    def get_market(self, waypoint_symbol: str) -> markets.Market | errors.Error:
+    def get_market(self, waypoint_symbol: str) -> Market | Error:
         """Get waypoint market details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
@@ -333,7 +334,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.market(response)
 
-    def get_shipyard(self, waypoint_symbol: str) -> shipyards.Shipyard | errors.Error:
+    def get_shipyard(self, waypoint_symbol: str) -> Shipyard | Error:
         """Get waypoint shipyard details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
@@ -345,7 +346,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.shipyard(response)
 
-    def get_jumpgate(self, waypoint_symbol: str) -> jumpgates.JumpGate | errors.Error:
+    def get_jumpgate(self, waypoint_symbol: str) -> JumpGate | Error:
         """Get waypoint jumpgate details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
@@ -357,7 +358,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.jumpgate(response)
 
-    def get_construction(self, waypoint_symbol: str) -> constructionsites.ConstructionSite | errors.Error:
+    def get_construction(self, waypoint_symbol: str) -> ConstructionSite | Error:
         """Get waypoint construction details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
