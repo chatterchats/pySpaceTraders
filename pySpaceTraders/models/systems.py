@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from pySpaceTraders.models.enums import SystemType, FactionSymbol
 from pySpaceTraders.models.waypoints import SystemWaypoint
@@ -12,5 +12,5 @@ class System:
     type: SystemType
     x: int
     y: int
-    waypoints: List[SystemWaypoint]
-    factions: List[FactionSymbol]
+    waypoints: Optional[List[SystemWaypoint]]
+    factions: Optional[List[FactionSymbol]]
