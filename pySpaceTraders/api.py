@@ -394,7 +394,6 @@ class SpaceTraderClient:
     def extract_resources(
         self, ship_symbol: str, survey: Optional[Survey | Dict[str, str | List[str]]] = None
     ) -> ExtractResources | ApiError:
-        # TODO: Construct payload from Survey object
         endpoint = "/my/ships/{}/extract"
         if survey is not None:
             endpoint += "/survey"
@@ -511,8 +510,16 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.refuel_ship(response)
 
-    def purchase_cargo(self):
-        pass
+    def purchase_cargo(
+        self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
+    ) -> BuySellCargo | ApiError:
+        payload = {"tradeSymbol": trade_symbol.value, "units": units}
+        response = self.request.api(
+            "POST", "/my/ships/{}/purchase", path_param=ship_symbol, payload=payload
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.buy_sell_cargo(response)
 
     def transfer_cargo(self):
         pass
