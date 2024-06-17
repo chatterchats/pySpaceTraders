@@ -11,7 +11,7 @@ pySpaceTrader is a Python-based SDK for the space trading game, **SpaceTraders**
 - [License](#license)
 - [Contact](#contact)
 
-## Installation
+## Local Installation
 
 1. Clone the repository:
    ```bash
@@ -21,20 +21,13 @@ pySpaceTrader is a Python-based SDK for the space trading game, **SpaceTraders**
    ```bash
    cd pySpaceTrader
    ```
-3. Create a Virtual Environment:
+3. Install pipenv:
    ```bash
-   python -m venv .venv
+   python -m pip install --user pipenv
    ```
-4. Activate Virtual Environment:
+4. Install packages
    ```bash
-   # Windows
-   .\.venv\Scripts\activate
-   # Linux & Mac
-   source .venv/bin/activate
-   ```
-5. Install the dependencies:
-   ```bash
-   pip install -r requirements.txt
+    pipenv install --dev
    ```
 
 ## Usage
