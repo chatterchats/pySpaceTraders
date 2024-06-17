@@ -533,7 +533,14 @@ class SpaceTraderClient:
         return self.parser.transfer_jettison_cargo(response)
         pass
 
-    def negotiate_contract(self):
+    def negotiate_contract(self, ship_symbol: str) -> Contract | ApiError:
+        response = self.request.api(
+            "POST", "/my/ships/{}/negotiate/contract", path_param=ship_symbol
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.negotiate_contract(response)
+
         pass
 
     def get_mounts(self):

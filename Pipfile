@@ -11,6 +11,7 @@ dacite = "~=1.8.1"
 black = "~=24.4.2"
 pytest = "~=8.2.2"
 pyright = "~=1.1.366"
+setuptools = ">=61.0"
 
 [requires]
 python_version = "3.12"
