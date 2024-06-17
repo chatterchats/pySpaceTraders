@@ -5,6 +5,7 @@
 """
 
 import httpx
+from datetime import datetime
 
 from pySpaceTraders.constants import V2_STARTRADERS_URL, __version__, REQUEST_TYPES
 from pySpaceTraders.utils.pySpaceLimiter import BurstyLimiter, Limiter
@@ -71,7 +72,7 @@ class PySpaceRequest:
         """
         if path_param:
             if "{}" in endpoint:
-                endpoint = endpoint.format(*path_param)
+                endpoint = endpoint.format(path_param)
             else:
                 endpoint = f"{endpoint}/{path_param}"
 
@@ -81,9 +82,22 @@ class PySpaceRequest:
             response = self.session.request(
                 method=method, url=endpoint, params=query_params, json=payload if payload else None
             )
+
             if self.logger:
                 self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
-                self.logger.debug(f"Path Param: {path_param} | Query Param: {str(query_params)} | Payload: {payload}")
-                self.logger.debug(f"Constructed URL: {response.url} | Response: {response.status_code}")
+                self.logger.debug(
+                    f"Path Param: {path_param} | Query Param: {str(query_params)} | Payload: {payload}"
+                )
+                self.logger.debug(
+                    f"Constructed URL: {response.url} | Response: {response.status_code}"
+                )
 
-            return response.json()
+            if "application/json" in response.headers.get("Content-Type", ""):
+                return response.json()
+            elif "cooldown" in str(response.url):
+                return {
+                    "shipSymbol": path_param,
+                    "totalSeconds": 0,
+                    "remainingSeconds": 0,
+                    "expiration": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%LZ"),
+                }
