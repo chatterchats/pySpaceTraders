@@ -106,13 +106,20 @@ class SpaceTraderClient:
         # Check validity of agent symbol
         if 3 < len(self.agent_symbol) > 14:
             raise ValueError(
-                f"Agent Symbol `{self.agent_symbol}` has a length of {len(self.agent_symbol)}. Length must be >= 3 and <=14."
+                f"Agent Symbol `{self.agent_symbol}` has a length of {len(self.agent_symbol)}."
+                + "Length must be >= 3 and <=14."
             )
 
         # Make sure faction is recruiting
         faction = self.get_faction(self.agent_faction)
-        if isinstance(faction, Faction) and faction.symbol == self.agent_faction and not faction.isRecruiting:
-            raise ValueError(f"`{self.agent_faction.value}` Faction is not recruiting new agents at this time.")
+        if (
+            isinstance(faction, Faction)
+            and faction.symbol == self.agent_faction
+            and not faction.isRecruiting
+        ):
+            raise ValueError(
+                f"`{self.agent_faction.value}` Faction is not recruiting new agents at this time."
+            )
 
         self.logger.debug("Agent Symbol and Faction Valid")
         json_data = {
@@ -144,7 +151,9 @@ class SpaceTraderClient:
     def get_all_pages(self, endpoint: str, pages: int) -> list:
         data = []
         for page in range(2, pages + 1):
-            data.extend(self.request.api("GET", endpoint, query_params={"limit": 20, "page": page})["data"])
+            data.extend(
+                self.request.api("GET", endpoint, query_params={"limit": 20, "page": page})["data"]
+            )
 
         return data
 
@@ -172,7 +181,9 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.get_agents(response)
 
-    def list_agents(self, limit: int = 20, page: int = 1, all_agents: bool = False) -> ListAgents | ApiError:
+    def list_agents(
+        self, limit: int = 20, page: int = 1, all_agents: bool = False
+    ) -> ListAgents | ApiError:
         """List all_factions  (Paginated)"""
         # token optional for get_agent
         query = {"limit": 20 if all_agents else limit, "page": page}
@@ -207,7 +218,9 @@ class SpaceTraderClient:
     # --- Contracts Endpoints --- #
     ###############################
 
-    def list_contracts(self, limit: int = 20, page: int = 1, all_contracts: bool = False) -> ListContracts | ApiError:
+    def list_contracts(
+        self, limit: int = 20, page: int = 1, all_contracts: bool = False
+    ) -> ListContracts | ApiError:
         """Paginated list all contracts agent has (Paginated)"""
         query = {"limit": 20 if all_contracts else limit, "page": page}
         response = self.request.api("GET", "/my/contracts", query_params=query)
@@ -254,7 +267,9 @@ class SpaceTraderClient:
             "trade_symbol": trade_symbol,
             "units": units,
         }
-        response = self.request.api("POST", "/my/contracts/{}/deliver", path_param=contract_id, payload=data)
+        response = self.request.api(
+            "POST", "/my/contracts/{}/deliver", path_param=contract_id, payload=data
+        )
         if "error" in response:
             return self.parser.error(response)
 
@@ -272,7 +287,9 @@ class SpaceTraderClient:
     # --- Factions Endpoints --- #
     ##############################
 
-    def list_factions(self, limit: int = 20, page: int = 1, all_factions: bool = False) -> ListFactions | ApiError:
+    def list_factions(
+        self, limit: int = 20, page: int = 1, all_factions: bool = False
+    ) -> ListFactions | ApiError:
         """List factions in the game. (Paginated)"""
         query = {"limit": 20 if all_factions else limit, "page": page}
         response = self.request.api("GET", "/factions", query_params=query)
@@ -339,9 +356,13 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.orbit_dock_ship(response)
 
-    def ship_refine(self, ship_symbol: str, refined_symbol: RefinedGoodSymbol) -> ShipRefine | ApiError:
+    def ship_refine(
+        self, ship_symbol: str, refined_symbol: RefinedGoodSymbol
+    ) -> ShipRefine | ApiError:
         payload = {"produce": refined_symbol.value}
-        response = self.request.api("POST", "/my/ships/{}/refine", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/refine", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.ship_refine(response)
@@ -388,30 +409,42 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.extract_resources(response)
 
-    def jettison_cargo(self, ship_symbol: str, trade_symbol: TradeSymbol, units: int) -> Cargo | ApiError:
+    def jettison_cargo(
+        self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
+    ) -> Cargo | ApiError:
         payload = {"tradeSymbol": trade_symbol.value, "units": units}
-        response = self.request.api("POST", "/my/ships/{}/jettison", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/jettison", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.transfer_jettison_cargo(response)
 
     def jump_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
         payload = {"waypointSymbol": waypoint_symbol}
-        response = self.request.api("POST", "/my/ships/{}/jump", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/jump", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.navigate_jump_warp_ship(response)
 
     def navigate_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
         payload = {"waypointSymbol": waypoint_symbol}
-        response = self.request.api("POST", "/my/ships/{}/navigate", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/navigate", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.navigate_jump_warp_ship(response)
 
-    def patch_ship_nav(self, ship_symbol: str, flight_mode: ShipNavFlightMode) -> ShipNav | ApiError:
+    def patch_ship_nav(
+        self, ship_symbol: str, flight_mode: ShipNavFlightMode
+    ) -> ShipNav | ApiError:
         payload = {"flightMode": flight_mode.value}
-        response = self.request.api("PATCH", "/my/ships/{}/nav", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "PATCH", "/my/ships/{}/nav", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_patch_ship_nav(response)
@@ -424,14 +457,20 @@ class SpaceTraderClient:
 
     def warp_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
         payload = {"waypointSymbol": waypoint_symbol}
-        response = self.request.api("POST", "/my/ships/{}/warp", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/warp", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.navigate_jump_warp_ship(response)
 
-    def sell_cargo(self, ship_symbol: str, trade_symbol: TradeSymbol, units: int) -> BuySellCargo | ApiError:
+    def sell_cargo(
+        self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
+    ) -> BuySellCargo | ApiError:
         payload = {"tradeSymbol": trade_symbol.value, "units": units}
-        response = self.request.api("POST", "/my/ships/{}/sell", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/sell", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.buy_sell_cargo(response)
@@ -459,23 +498,18 @@ class SpaceTraderClient:
     ) -> RefuelShip | ApiError:
         """
         Refuel your ship by buying fuel from the local market.
-        Requires the ship to be docked in a waypoint that has the Marketplace trait, and the market must be selling fuel in order to refuel.
-        Each fuel bought from the market replenishes 100 units in your ship's fuel.
-        Ships will always be refuel to their frame's maximum fuel capacity when using this action
-
-        :parameter str ship_symbol: The ship symbol.
-        :parameter int fuel_units:  When not specified, the ship will be refueled to its maximum fuel capacity. If the amount specified is greater than the ship's remaining capacity, the ship will only be refueled to its maximum fuel capacity. The amount specified is not in market units but in ship fuel units.
-        :parameter bool from_cargo: Wether to use the FUEL thats in your cargo or not. Default: false
-
-        :return: RefuelShip | ApiError
+        Requires the ship to be docked in a waypoint that has the Marketplace trait, and the market
+        must be selling fuel in order to refuel. Each fuel bought from the market replenishes 100
+        units in your ship's fuel. Ships will always be refueled to their frame's maximum fuel
+        capacity when using this action.
         """
         payload = {"fuelUnits": fuel_units, "fromCargo": from_cargo}
-        response = self.request.api("POST", "/my/ships/{}/refuel", path_param=ship_symbol, payload=payload)
+        response = self.request.api(
+            "POST", "/my/ships/{}/refuel", path_param=ship_symbol, payload=payload
+        )
         if "error" in response:
             return self.parser.error(response)
         return self.parser.refuel_ship(response)
-
-        pass
 
     def purchase_cargo(self):
         pass
@@ -574,7 +608,9 @@ class SpaceTraderClient:
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
         if all_waypoints and response["meta"]["pages"] > 1:
             response["data"].extend(
-                self.get_all_pages("/systems/{}/waypoints".format(system_symbol.upper()), response["meta"]["pages"])
+                self.get_all_pages(
+                    "/systems/{}/waypoints".format(system_symbol.upper()), response["meta"]["pages"]
+                )
             )
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])

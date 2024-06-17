@@ -1,7 +1,12 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from pySpaceTraders.models.enums import FactionSymbol, WaypointType, WaypointTraitSymbol, WaypointModifierSymbol
+from pySpaceTraders.models.enums import (
+    FactionSymbol,
+    WaypointType,
+    WaypointTraitSymbol,
+    WaypointModifierSymbol,
+)
 
 
 @dataclass
