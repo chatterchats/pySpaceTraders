@@ -34,6 +34,8 @@ from pySpaceTraders.models.response import (
     ScanWaypoints,
     ScanShips,
     RefuelShip,
+    GetMounts,
+    InstallRemoveMount,
 )
 from pySpaceTraders.models.agents import Agent
 from pySpaceTraders.models.cargo import Cargo
@@ -531,7 +533,6 @@ class SpaceTraderClient:
         if "error" in response:
             return self.parser.error(response)
         return self.parser.transfer_jettison_cargo(response)
-        pass
 
     def negotiate_contract(self, ship_symbol: str) -> Contract | ApiError:
         response = self.request.api(
@@ -541,16 +542,29 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.negotiate_contract(response)
 
-        pass
+    def get_mounts(self, ship_symbol: str) -> GetMounts | ApiError:
+        response = self.request.api("GET", "/my/ships/{}/mounts", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.get_mounts(response)
 
-    def get_mounts(self):
-        pass
+    def install_mount(self, ship_symbol: str, mount_symbol: str) -> InstallRemoveMount | ApiError:
+        payload = {"symbol": mount_symbol}
+        response = self.request.api(
+            "POST", "/my/ships/{}/mounts/install", path_param=ship_symbol, payload=payload
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.install_remove_mount(response)
 
-    def install_mount(self):
-        pass
-
-    def remove_mount(self):
-        pass
+    def remove_mount(self, ship_symbol: str, mount_symbol: str) -> InstallRemoveMount | ApiError:
+        payload = {"symbol": mount_symbol}
+        response = self.request.api(
+            "POST", "/my/ships/{}/mounts/remove", path_param=ship_symbol, payload=payload
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.install_remove_mount(response)
 
     def get_ship_scrap_value(self):
         pass
