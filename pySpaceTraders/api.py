@@ -36,6 +36,8 @@ from pySpaceTraders.models.response import (
     RefuelShip,
     GetMounts,
     InstallRemoveMount,
+    ScrapShip,
+    RepairShip,
 )
 from pySpaceTraders.models.agents import Agent
 from pySpaceTraders.models.cargo import Cargo
@@ -566,17 +568,29 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.install_remove_mount(response)
 
-    def get_ship_scrap_value(self):
-        pass
+    def get_ship_scrap_value(self, ship_symbol: str) -> ScrapShip | ApiError:
+        response = self.request.api("GET", "/my/ships/{}/scrap", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.scrap_ship(response)
 
-    def scrap_ship(self):
-        pass
+    def scrap_ship(self, ship_symbol: str) -> ScrapShip | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/scrap", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.scrap_ship(response)
 
-    def get_repair_ship_cost(self):
-        pass
+    def get_repair_ship_cost(self, ship_symbol: str) -> RepairShip | ApiError:
+        response = self.request.api("GET", "/my/ships/{}/repair", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.repair_ship(response)
 
-    def repair_ship(self):
-        pass
+    def repair_ship(self, ship_symbol: str) -> RepairShip | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/repair", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.repair_ship(response)
 
     #############################
     # --- Systems Endpoints --- #
