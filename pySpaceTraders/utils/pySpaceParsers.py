@@ -182,18 +182,25 @@ class PySpaceParser:
         return self.response_to_class(Contract, contract_dict)
 
     def accept_contract(self, accept_contract_dict: dict) -> AcceptContract:
-        accept_contract_dict = accept_contract_dict["data"] if "data" in accept_contract_dict else accept_contract_dict
+        accept_contract_dict = (
+            accept_contract_dict["data"] if "data" in accept_contract_dict else accept_contract_dict
+        )
+        accept_contract_dict["ApiInstance"] = self.ApiInstance
         return self.response_to_class(AcceptContract, accept_contract_dict)
 
     def deliver_cargo_to_contract(self, deliver_contract_dict: dict) -> DeliverCargoToContract:
         deliver_contract_dict = (
-            deliver_contract_dict["data"] if "data" in deliver_contract_dict else deliver_contract_dict
+            deliver_contract_dict["data"]
+            if "data" in deliver_contract_dict
+            else deliver_contract_dict
         )
         return self.response_to_class(DeliverCargoToContract, deliver_contract_dict)
 
     def fulfill_contract(self, fulfill_contract_dict: dict) -> FulfillContract:
         fulfill_contract_dict = (
-            fulfill_contract_dict["data"] if "data" in fulfill_contract_dict else fulfill_contract_dict
+            fulfill_contract_dict["data"]
+            if "data" in fulfill_contract_dict
+            else fulfill_contract_dict
         )
         return self.response_to_class(FulfillContract, fulfill_contract_dict)
 
@@ -217,7 +224,9 @@ class PySpaceParser:
         return self.response_to_class(ListShips, ships_meta_dict)
 
     def purchase_ship(self, purchase_ship_dict) -> PurchaseShip:
-        purchase_ship_dict = purchase_ship_dict["data"] if "data" in purchase_ship_dict else purchase_ship_dict
+        purchase_ship_dict = (
+            purchase_ship_dict["data"] if "data" in purchase_ship_dict else purchase_ship_dict
+        )
         return self.response_to_class(PurchaseShip, purchase_ship_dict)
 
     def get_ship(self, ship_dict: dict) -> Ship:
@@ -240,7 +249,9 @@ class PySpaceParser:
         return self.response_to_class(ShipNav, navigation_dict)
 
     def ship_refine(self, ship_refine_dict: dict) -> ShipRefine:
-        ship_refine_dict = ship_refine_dict["data"] if "data" in ship_refine_dict else ship_refine_dict
+        ship_refine_dict = (
+            ship_refine_dict["data"] if "data" in ship_refine_dict else ship_refine_dict
+        )
 
         return self.response_to_class(ShipRefine, ship_refine_dict)
 
@@ -336,12 +347,16 @@ class PySpaceParser:
         return self.response_to_class(ScrapShip, scrap_ship_dict)
 
     def get_repair_ship(self, repair_ship_dict: dict) -> MarketTransaction:
-        repair_ship_dict = repair_ship_dict["data"] if "data" in repair_ship_dict else repair_ship_dict
+        repair_ship_dict = (
+            repair_ship_dict["data"] if "data" in repair_ship_dict else repair_ship_dict
+        )
 
         return self.response_to_class(MarketTransaction, repair_ship_dict)
 
     def repair_ship(self, repair_ship_dict: dict) -> RepairShip:
-        repair_ship_dict = repair_ship_dict["data"] if "data" in repair_ship_dict else repair_ship_dict
+        repair_ship_dict = (
+            repair_ship_dict["data"] if "data" in repair_ship_dict else repair_ship_dict
+        )
 
         return self.response_to_class(RepairShip, repair_ship_dict)
 
