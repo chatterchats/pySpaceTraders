@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List
 
 from pySpaceTraders.models.enums import FactionSymbol, FactionTraitSymbol
-from pySpaceTraders.models.general import ListMeta
 
 
 @dataclass

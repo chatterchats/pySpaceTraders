@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from typing import List, Any, Optional
 
-from pySpaceTraders.models.enums import *
-from pySpaceTraders.models.responses import ContractAgent, Error
+from pySpaceTraders.models.enums import TradeSymbol, FactionSymbol, ContractType
+from pySpaceTraders.models.response.generic import ApiError
 
 
 @dataclass
@@ -55,15 +55,16 @@ class Contract:
 
     def accept(self) -> bool:
         if self.accepted:
+            self.ApiInstance.logger.info("Contract Already Accepted")
             return False
         else:
             response = self.ApiInstance.accept_contract(self.id)
             print(response)
-            if response is ContractAgent:
-                self.update_contract(response.contract)
+            if response is "AcceptContract":
+                self.update_contract(response.get_contract)
                 return True
-            elif response is Error:
-                print(Error)
+            elif response is ApiError:
+                print(ApiError)
                 return False
         return False
 
@@ -84,5 +85,5 @@ class Contract:
             pass
         else:
             response = self.ApiInstance.fulfill_contract(self.id)
-            if response is ContractAgent:
-                self.update_contract(response.contract)
+            if response is "FulfillContract":
+                self.update_contract(response.get_contract)

@@ -44,16 +44,3 @@ class Stats:
     ships: int
     systems: int
     waypoints: int
-
-
-@dataclass
-class Status:
-    announcements: List[Announcement]
-    description: str
-    leaderboards: Leaderboard
-    links: List[Link]
-    resetDate: str
-    serverResets: ServerReset
-    stats: Stats
-    status: str
-    version: str

@@ -152,14 +152,6 @@ class ShipRefineIO:
 
 
 @dataclass
-class ShipRefine:
-    cargo: Cargo
-    cooldown: ShipCooldown
-    produced: ShipRefineIO
-    consumed: ShipRefineIO
-
-
-@dataclass
 class ShipExtractionYield:
     symbol: TradeSymbol
     units: int
@@ -203,14 +195,6 @@ class ShipSiphonYields:
 class ShipSiphon:
     shipSymbol: str
     yields: ShipSiphonYields
-
-
-@dataclass
-class ShipSiphonGas:
-    cooldown: ShipCooldown
-    siphon: ShipSiphon
-    cargo: Cargo
-    events: List[ShipEvent]
 
 
 @dataclass

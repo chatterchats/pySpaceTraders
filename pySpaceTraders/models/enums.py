@@ -115,6 +115,18 @@ class FactionSymbol(StrEnum):
     ETHEREAL = "ETHEREAL"
 
 
+class RefinedGoodSymbol(StrEnum):
+    IRON = "IRON"
+    COPPER = "COPPER"
+    SILVER = "SILVER"
+    GOLD = "GOLD"
+    ALUMINUM = "ALUMINUM"
+    PLATINUM = "PLATINUM"
+    URANITE = "URANITE"
+    MERITIUM = "MERITIUM"
+    FUEL = "FUEL"
+
+
 class ShipConditionEventSymbol(StrEnum):
     REACTOR_OVERLOAD = "REACTOR_OVERLOAD"
     ENERGY_SPIKE_FROM_MINERAL = "ENERGY_SPIKE_FROM_MINERAL"

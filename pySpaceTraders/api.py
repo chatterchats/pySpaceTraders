@@ -1,25 +1,48 @@
+import inspect
 import json
 import math
 import os.path
-from typing import List
+from typing import List, Optional, Dict
 
+from pySpaceTraders.models.enums import (
+    FactionSymbol,
+    TradeSymbol,
+    WaypointType,
+    WaypointTraitSymbol,
+    ShipType,
+    ShipNavFlightMode,
+    RefinedGoodSymbol,
+)
+from pySpaceTraders.models.response import (
+    ApiError,
+    AcceptContract,
+    DeliverCargoToContract,
+    PurchaseShip,
+    ShipRefine,
+    CreateSurvey,
+    ExtractResources,
+    CreateChart,
+    ListSystems,
+    ListWaypoints,
+    SupplyConstructionSite,
+    ListFactions,
+    ListContracts,
+    ListAgents,
+    NavigateShip,
+    BuySellCargo,
+    ScanSystems,
+    ScanWaypoints,
+    ScanShips,
+    RefuelShip,
+)
 from pySpaceTraders.models.agents import Agent
+from pySpaceTraders.models.cargo import Cargo
 from pySpaceTraders.models.constructionsites import ConstructionSite
 from pySpaceTraders.models.contracts import Contract
-from pySpaceTraders.models.enums import FactionSymbol, TradeSymbol, WaypointType, WaypointTraitSymbol
 from pySpaceTraders.models.factions import Faction
 from pySpaceTraders.models.jumpgates import JumpGate
 from pySpaceTraders.models.markets import Market
-from pySpaceTraders.models.responses import (
-    Error,
-    WaypointList,
-    SystemList,
-    FactionList,
-    ContractAgent,
-    ContractDeliver,
-    ContractList,
-    AgentList,
-)
+from pySpaceTraders.models.ships import Ship, ShipCooldown, Survey, ShipNav
 from pySpaceTraders.models.shipyards import Shipyard
 from pySpaceTraders.models.systems import System
 from pySpaceTraders.models.waypoints import Waypoint
@@ -100,11 +123,14 @@ class SpaceTraderClient:
         if self.agent_email:
             json_data["email"] = self.agent_email
 
-        register = self.request.api("POST", "/register", payload=json_data)
+        response = self.request.api("POST", "/register", payload=json_data)
+        if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
+            return self.parser.error(response)
 
-        if "data" in register.keys():
+        if "data" in response.keys():
             self.logger.debug("Register Successful")
-            self.token = register["data"]["token"]
+            self.token = response["data"]["token"]
             data = {}
             if os.path.isfile("tokens.json"):
                 with open("tokens.json", "r") as f:
@@ -114,23 +140,39 @@ class SpaceTraderClient:
                 self.logger.debug("Writing new token to tokens.json")
                 data[self.agent_symbol] = {"token": self.token}
                 json.dump(data, f, indent=4, ensure_ascii=False)
-        elif "error" in register.keys():
-            self.logger.error(f"Error with registering. {self.parser.error(register)}")
+
+    def get_all_pages(self, endpoint: str, pages: int) -> list:
+        data = []
+        for page in range(2, pages + 1):
+            data.extend(self.request.api("GET", endpoint, query_params={"limit": 20, "page": page})["data"])
+
+        return data
+
+    #############################
+    # --- General Endpoints --- #
+    #############################
 
     def status(self):
         """Server Status and Announcements."""
         response = self.request.api("GET", "/")
+        if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
+            return self.parser.error(response)
         return self.parser.status(response)
 
-    # Agent Endpoints #
-    def my_agent(self) -> Agent | Error:
+    ############################
+    # --- Agents Endpoints --- #
+    ############################
+
+    def my_agent(self) -> Agent | ApiError:
         """Fetch your agent's details"""
         response = self.request.api("GET", "/my/agent")
         if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
-        return self.parser.agent(response)
+        return self.parser.get_agents(response)
 
-    def list_agents(self, limit: int = 20, page: int = 1, all_agents: bool = False) -> AgentList | Error:
+    def list_agents(self, limit: int = 20, page: int = 1, all_agents: bool = False) -> ListAgents | ApiError:
         """List all_factions  (Paginated)"""
         # token optional for get_agent
         query = {"limit": 20 if all_agents else limit, "page": page}
@@ -138,6 +180,7 @@ class SpaceTraderClient:
 
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
         if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
 
         if all_agents and response["meta"]["pages"] > 1:
@@ -147,7 +190,7 @@ class SpaceTraderClient:
 
         return self.parser.agent_list(response)
 
-    def get_agent(self, symbol: str = "CHATS") -> Agent | Error:
+    def get_agent(self, symbol: str = "CHATS") -> Agent | ApiError:
         """Fetch single agent details."""
         # token optional for get_agent
         response = self.request.api(
@@ -156,15 +199,20 @@ class SpaceTraderClient:
             path_param=symbol,
         )
         if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
-        return self.parser.agent(response)
+        return self.parser.get_agents(response)
 
-    # Contracts Endpoints #
-    def list_contracts(self, limit: int = 20, page: int = 1, all_contracts: bool = False) -> ContractList | Error:
+    ###############################
+    # --- Contracts Endpoints --- #
+    ###############################
+
+    def list_contracts(self, limit: int = 20, page: int = 1, all_contracts: bool = False) -> ListContracts | ApiError:
         """Paginated list all contracts agent has (Paginated)"""
         query = {"limit": 20 if all_contracts else limit, "page": page}
         response = self.request.api("GET", "/my/contracts", query_params=query)
         if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
 
         response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
@@ -174,30 +222,32 @@ class SpaceTraderClient:
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
 
-        return self.parser.contract_list(response)
+        return self.parser.list_contracts(response)
 
-    def get_contract(self, contract_id: str) -> Contract | Error:
+    def get_contract(self, contract_id: str) -> Contract | ApiError:
         """Fetch single contract details"""
         # token optional for get_agent
 
         response = self.request.api("GET", "/my/contracts", path_param=contract_id)
         if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
-        return self.parser.contract(response)
+        return self.parser.get_contract(response)
 
-    def accept_contract(self, contract_id: str) -> ContractAgent | Error:
+    def accept_contract(self, contract_id: str) -> AcceptContract | ApiError:
         """Accept a contract."""
 
         response = self.request.api("POST", "/my/contracts/{}/accept", path_param=[contract_id])
 
         if "error" in response:
+            self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
 
-        return self.parser.contract_agent(response)
+        return self.parser.accept_contract(response)
 
     def deliver_contract_cargo(
         self, contract_id: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
-    ) -> ContractDeliver | Error:
+    ) -> DeliverCargoToContract | ApiError:
         """ContractDeliver cargo for a given contract."""
         data = {
             "ship_symbol": ship_symbol,
@@ -208,18 +258,21 @@ class SpaceTraderClient:
         if "error" in response:
             return self.parser.error(response)
 
-        return self.parser.contract_cargo(response)
+        return self.parser.deliver_cargo_to_contract(response)
 
-    def fulfill_contract(self, contract_id: str) -> ContractAgent | Error:
+    def fulfill_contract(self, contract_id: str) -> AcceptContract | ApiError:
         """Fulfill (complete) a contract."""
         response = self.request.api("POST", "/my/contracts/{}/fulfill", path_param=contract_id)
         if "error" in response:
             return self.parser.error(response)
 
-        return self.parser.contract_agent(response)
+        return self.parser.accept_contract(response)
 
-    # Faction Endpoints #
-    def list_factions(self, limit: int = 20, page: int = 1, all_factions: bool = False) -> FactionList | Error:
+    ##############################
+    # --- Factions Endpoints --- #
+    ##############################
+
+    def list_factions(self, limit: int = 20, page: int = 1, all_factions: bool = False) -> ListFactions | ApiError:
         """List factions in the game. (Paginated)"""
         query = {"limit": 20 if all_factions else limit, "page": page}
         response = self.request.api("GET", "/factions", query_params=query)
@@ -231,19 +284,236 @@ class SpaceTraderClient:
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
 
-        return self.parser.faction_list(response)
+        return self.parser.list_factions(response)
 
-    def get_faction(self, faction_symbol: FactionSymbol) -> Faction | Error:
+    def get_faction(self, faction_symbol: FactionSymbol) -> Faction | ApiError:
         """View the details of a faction."""
         response = self.request.api("GET", "/factions", path_param=faction_symbol)
         if "error" in response:
             return self.parser.error(response)
 
-        return self.parser.faction(response)
+        return self.parser.get_faction(response)
+
+    ###########################
+    # --- Fleet Endpoints --- #
+    ###########################
+
+    def list_ships(self, limit: int = 10, page: int = 1, all_ships: bool = False):
+        """List your ships. (Paginated)"""
+        query = {"limit": 20 if all_ships else limit, "page": page}
+        response = self.request.api("GET", "/my/ships", query_params=query)
+        if "error" in response:
+            return self.parser.error(response)
+
+        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
+        if all_ships and response["meta"]["pages"] > 1:
+            response["data"].extend(self.get_all_pages("/my/ships", response["meta"]["pages"]))
+            response["meta"]["page"] = 1
+            response["meta"]["limit"] = len(response["data"])
+
+        return self.parser.list_ships(response)
+
+    def purchase_ship(self, ship_type: ShipType, waypoint_symbol: str) -> PurchaseShip | ApiError:
+
+        payload = {"shipType": ship_type.value, "waypointSymbol": waypoint_symbol}
+        response = self.request.api("POST", "/my/ships", payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.purchase_ship(response)
+
+    def get_ship(self, ship_symbol: str) -> Ship | ApiError:
+        response = self.request.api("GET", "/my/ships", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.get_ship(response)
+
+    def get_ship_cargo(self, ship_symbol: str) -> Cargo | ApiError:
+        response = self.request.api("GET", "/my/ships/{}/cargo", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.get_ship_cargo(response)
+
+    def orbit_ship(self, ship_symbol: str) -> ShipNav | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/orbit", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.orbit_dock_ship(response)
+
+    def ship_refine(self, ship_symbol: str, refined_symbol: RefinedGoodSymbol) -> ShipRefine | ApiError:
+        payload = {"produce": refined_symbol.value}
+        response = self.request.api("POST", "/my/ships/{}/refine", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.ship_refine(response)
+
+    def create_chart(self, ship_symbol: str) -> CreateChart | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/chart", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.create_chart(response)
+
+    def get_ship_cooldown(self, ship_symbol: str) -> ShipCooldown | ApiError:
+        response = self.request.api("GET", "/my/ships/{}/cooldown", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.get_ship_cooldown(response)
+
+    def dock_ship(self, ship_symbol: str) -> ShipNav | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/dock", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.orbit_dock_ship(response)
+
+    def create_survey(self, ship_symbol: str) -> CreateSurvey | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/survey", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.create_survey(response)
+
+    def extract_resources(
+        self, ship_symbol: str, survey: Optional[Survey | Dict[str, str | List[str]]] = None
+    ) -> ExtractResources | ApiError:
+        # TODO: Construct payload from Survey object
+        endpoint = "/my/ships/{}/extract"
+        if survey is not None:
+            endpoint += "/survey"
+        response = self.request.api("POST", endpoint, path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.extract_resources(response)
+
+    def siphon_resources(self, ship_symbol: str) -> ExtractResources | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/extract", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.extract_resources(response)
+
+    def jettison_cargo(self, ship_symbol: str, trade_symbol: TradeSymbol, units: int) -> Cargo | ApiError:
+        payload = {"tradeSymbol": trade_symbol.value, "units": units}
+        response = self.request.api("POST", "/my/ships/{}/jettison", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.transfer_jettison_cargo(response)
+
+    def jump_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
+        payload = {"waypointSymbol": waypoint_symbol}
+        response = self.request.api("POST", "/my/ships/{}/jump", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.navigate_jump_warp_ship(response)
+
+    def navigate_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
+        payload = {"waypointSymbol": waypoint_symbol}
+        response = self.request.api("POST", "/my/ships/{}/navigate", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.navigate_jump_warp_ship(response)
+
+    def patch_ship_nav(self, ship_symbol: str, flight_mode: ShipNavFlightMode) -> ShipNav | ApiError:
+        payload = {"flightMode": flight_mode.value}
+        response = self.request.api("PATCH", "/my/ships/{}/nav", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.get_patch_ship_nav(response)
+
+    def get_ship_nav(self, ship_symbol: str) -> ShipNav | ApiError:
+        response = self.request.api("GET", "/my/ships/{}/nav", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.get_patch_ship_nav(response)
+
+    def warp_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
+        payload = {"waypointSymbol": waypoint_symbol}
+        response = self.request.api("POST", "/my/ships/{}/warp", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.navigate_jump_warp_ship(response)
+
+    def sell_cargo(self, ship_symbol: str, trade_symbol: TradeSymbol, units: int) -> BuySellCargo | ApiError:
+        payload = {"tradeSymbol": trade_symbol.value, "units": units}
+        response = self.request.api("POST", "/my/ships/{}/sell", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.buy_sell_cargo(response)
+
+    def scan_systems(self, ship_symbol: str) -> ScanSystems | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/scan/systems", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.scan_systems(response)
+
+    def scan_waypoints(self, ship_symbol: str) -> ScanWaypoints | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/scan/waypoints", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.scan_waypoints(response)
+
+    def scan_ship(self, ship_symbol: str) -> ScanShips | ApiError:
+        response = self.request.api("POST", "/my/ships/{}/scan/ships", path_param=ship_symbol)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.scan_ships(response)
+
+    def refuel_ship(
+        self, ship_symbol: str, fuel_units: Optional[int], from_cargo: bool = False
+    ) -> RefuelShip | ApiError:
+        """
+        Refuel your ship by buying fuel from the local market.
+        Requires the ship to be docked in a waypoint that has the Marketplace trait, and the market must be selling fuel in order to refuel.
+        Each fuel bought from the market replenishes 100 units in your ship's fuel.
+        Ships will always be refuel to their frame's maximum fuel capacity when using this action
+
+        :parameter str ship_symbol: The ship symbol.
+        :parameter int fuel_units:  When not specified, the ship will be refueled to its maximum fuel capacity. If the amount specified is greater than the ship's remaining capacity, the ship will only be refueled to its maximum fuel capacity. The amount specified is not in market units but in ship fuel units.
+        :parameter bool from_cargo: Wether to use the FUEL thats in your cargo or not. Default: false
+
+        :return: RefuelShip | ApiError
+        """
+        payload = {"fuelUnits": fuel_units, "fromCargo": from_cargo}
+        response = self.request.api("POST", "/my/ships/{}/refuel", path_param=ship_symbol, payload=payload)
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.refuel_ship(response)
+
+        pass
+
+    def purchase_cargo(self):
+        pass
+
+    def transfer_cargo(self):
+        pass
+
+    def negotiate_contract(self):
+        pass
+
+    def get_mounts(self):
+        pass
+
+    def install_mount(self):
+        pass
+
+    def remove_mount(self):
+        pass
+
+    def get_ship_scrap_value(self):
+        pass
+
+    def scrap_ship(self):
+        pass
+
+    def get_repair_ship_cost(self):
+        pass
+
+    def repair_ship(self):
+        pass
+
+    #############################
+    # --- Systems Endpoints --- #
+    #############################
 
     def list_systems(
         self, limit: int = 20, page: int = 1, all_systems: bool = False, confirm_all: bool = True
-    ) -> SystemList | Error:
+    ) -> ListSystems | ApiError:
         """List systems in the game. (Paginated)"""
         query = {"limit": 20 if all_systems else limit, "page": page}
         response = self.request.api("GET", "/systems", query_params=query)
@@ -254,14 +524,14 @@ class SpaceTraderClient:
             response["data"].extend(self.get_all_pages("/systems", response["meta"]["pages"]))
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
-        return self.parser.system_list(response)
+        return self.parser.list_systems(response)
 
-    def get_system(self, system_symbol: str) -> System | Error:
+    def get_system(self, system_symbol: str) -> System | ApiError:
         """Get the details of a system."""
         response = self.request.api("GET", "/systems", path_param=system_symbol.upper())
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.system(response)
+        return self.parser.get_system(response)
 
     def list_system_waypoints(
         self,
@@ -271,7 +541,7 @@ class SpaceTraderClient:
         traits: WaypointTraitSymbol | List[WaypointTraitSymbol] | None = None,
         waypoint_type: WaypointType | None = None,
         all_waypoints: bool = False,
-    ) -> WaypointList | Error:
+    ) -> ListWaypoints | ApiError:
         """List waypoints for specified system. (Paginated)"""
         limit = 20 if all_waypoints else limit
         query = {
@@ -308,10 +578,10 @@ class SpaceTraderClient:
             )
             response["meta"]["page"] = 1
             response["meta"]["limit"] = len(response["data"])
-        return self.parser.system_waypoints_list(response)
+        return self.parser.list_waypoints_in_system(response)
 
-    def get_waypoint(self, waypoint_symbol: str) -> Waypoint | Error:
-        """Get single waypoint details"""
+    def get_waypoint(self, waypoint_symbol: str) -> Waypoint | ApiError:
+        """Get single waypoint_symbol details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -320,10 +590,10 @@ class SpaceTraderClient:
         )
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.waypoint(response)
+        return self.parser.get_waypoint(response)
 
-    def get_market(self, waypoint_symbol: str) -> Market | Error:
-        """Get waypoint market details"""
+    def get_market(self, waypoint_symbol: str) -> Market | ApiError:
+        """Get waypoint_symbol market details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -332,10 +602,10 @@ class SpaceTraderClient:
         )
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.market(response)
+        return self.parser.get_market(response)
 
-    def get_shipyard(self, waypoint_symbol: str) -> Shipyard | Error:
-        """Get waypoint shipyard details"""
+    def get_shipyard(self, waypoint_symbol: str) -> Shipyard | ApiError:
+        """Get waypoint_symbol shipyard details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -344,10 +614,10 @@ class SpaceTraderClient:
         )
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.shipyard(response)
+        return self.parser.get_shipyard(response)
 
-    def get_jumpgate(self, waypoint_symbol: str) -> JumpGate | Error:
-        """Get waypoint jumpgate details"""
+    def get_jumpgate(self, waypoint_symbol: str) -> JumpGate | ApiError:
+        """Get waypoint_symbol jumpgate details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -356,10 +626,10 @@ class SpaceTraderClient:
         )
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.jumpgate(response)
+        return self.parser.get_jump_gate(response)
 
-    def get_construction(self, waypoint_symbol: str) -> ConstructionSite | Error:
-        """Get waypoint construction details"""
+    def get_construction(self, waypoint_symbol: str) -> ConstructionSite | ApiError:
+        """Get waypoint_symbol construction details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -369,10 +639,12 @@ class SpaceTraderClient:
 
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.construction_site(response)
+        return self.parser.get_construction_site(response)
 
-    def supply_construction(self, waypoint_symbol: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int):
-        """Supply waypoint construction site."""
+    def supply_construction(
+        self, waypoint_symbol: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
+    ) -> SupplyConstructionSite | ApiError:
+        """Supply waypoint_symbol construction site."""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         payload = {
             "ship_symbol": ship_symbol,
@@ -387,26 +659,4 @@ class SpaceTraderClient:
         )
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.construction_supply(response)
-
-    def list_ships(self, limit: int = 10, page: int = 1, all_ships: bool = False):
-        """List your ships. (Paginated)"""
-        query = {"limit": 20 if all_ships else limit, "page": page}
-        response = self.request.api("GET", "/my/ships", query_params=query)
-        if "error" in response:
-            return self.parser.error(response)
-
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
-        if all_ships and response["meta"]["pages"] > 1:
-            response["data"].extend(self.get_all_pages("/my/ships", response["meta"]["pages"]))
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
-
-        return self.parser.ship_list(response)
-
-    def get_all_pages(self, endpoint: str, pages: int) -> list:
-        data = []
-        for page in range(2, pages + 1):
-            data.extend(self.request.api("GET", endpoint, query_params={"limit": 20, "page": page})["data"])
-
-        return data
+        return self.parser.supply_construction_site(response)
