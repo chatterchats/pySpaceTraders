@@ -521,7 +521,16 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.buy_sell_cargo(response)
 
-    def transfer_cargo(self):
+    def transfer_cargo(
+        self, from_ship_symbol: str, trade_symbol: TradeSymbol, units: int, to_ship_symbol: str
+    ) -> Cargo | ApiError:
+        payload = {"tradeSymbol": trade_symbol.value, "units": units, "shipSymbol": to_ship_symbol}
+        response = self.request.api(
+            "POST", "/my/ships/{}/transfer", path_param=from_ship_symbol, payload=payload
+        )
+        if "error" in response:
+            return self.parser.error(response)
+        return self.parser.transfer_jettison_cargo(response)
         pass
 
     def negotiate_contract(self):
