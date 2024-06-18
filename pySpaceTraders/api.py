@@ -490,7 +490,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.scan_waypoints(response)
 
-    def scan_ship(self, ship_symbol: str) -> ScanShips | ApiError:
+    def scan_ships(self, ship_symbol: str) -> ScanShips | ApiError:
         response = self.request.api("POST", "/my/ships/{}/scan/ships", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
