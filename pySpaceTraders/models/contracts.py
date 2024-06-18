@@ -46,7 +46,7 @@ class Contract:
     fulfilled: bool
     expiration: str
     deadlineToAccept: Optional[str]
-    ApiInstance: Any
+    ApiInstance: Optional[Any]
 
     def update_contract(self, contract_in) -> None:
         for k, v in contract_in.__dict__.items():
