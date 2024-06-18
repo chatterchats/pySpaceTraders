@@ -58,7 +58,7 @@ class PySpaceRequest:
         path_param: str | list | None = None,
         query_params: dict | None = None,
         payload: dict | None = None,
-    ) -> dict:
+    ) -> dict | str:
         """
         Makes an HTTP request to the SpaceTraders specified endpoint.
 
@@ -72,7 +72,9 @@ class PySpaceRequest:
         """
         if path_param:
             if "{}" in endpoint:
-                endpoint = endpoint.format(path_param)
+                if path_param is not tuple:
+                    path_param = path_param
+                endpoint = endpoint.format(*path_param)
             else:
                 endpoint = f"{endpoint}/{path_param}"
 
@@ -101,3 +103,5 @@ class PySpaceRequest:
                     "remainingSeconds": 0,
                     "expiration": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%LZ"),
                 }
+            else:
+                return response.text
