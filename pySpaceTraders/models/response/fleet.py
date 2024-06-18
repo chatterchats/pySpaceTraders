@@ -55,7 +55,7 @@ from pySpaceTraders.models.ships import (
     Survey,
     ShipRefineIO,
 )
-from pySpaceTraders.models.shipyards import MountScrapRepairTransaction
+from pySpaceTraders.models.shipyards import MountScrapRepairTransaction, ShipyardTransaction
 from pySpaceTraders.models.systems import System
 from pySpaceTraders.models.waypoints import Waypoint, Chart
 
@@ -70,7 +70,7 @@ class ListShips:
 class PurchaseShip:
     agent: Agent
     ship: Ship
-    transaction: MarketTransaction
+    transaction: ShipyardTransaction
 
 
 @dataclass
