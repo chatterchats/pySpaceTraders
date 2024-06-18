@@ -135,6 +135,11 @@ class PySpaceParser:
         if "yield" in response_dict:
             response_dict["yields"] = response_dict["yield"]
             del response_dict["yield"]
+        else:
+            for k, v in response_dict.items():
+                if isinstance(v, dict) and "yield" in v:
+                    response_dict[k]["yields"] = response_dict[k]["yield"]
+                    del response_dict[k]["yield"]
         return response_dict
 
     def response_to_class(self, obj_class, response_dict: dict):
@@ -185,7 +190,7 @@ class PySpaceParser:
         accept_contract_dict = (
             accept_contract_dict["data"] if "data" in accept_contract_dict else accept_contract_dict
         )
-        accept_contract_dict["ApiInstance"] = self.ApiInstance
+        accept_contract_dict.update({"ApiInstance": self.ApiInstance})
         return self.response_to_class(AcceptContract, accept_contract_dict)
 
     def deliver_cargo_to_contract(self, deliver_contract_dict: dict) -> DeliverCargoToContract:
