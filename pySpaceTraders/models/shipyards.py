@@ -1,8 +1,17 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from pySpaceTraders.models.enums import ShipType, SupplyLevel, ActivityLevel
+from pySpaceTraders.models.enums import ShipType, SupplyLevel, ActivityLevel, TradeSymbol
 from pySpaceTraders.models.ships import ShipFrame, ShipReactor, ShipModule, ShipMount
+
+
+@dataclass
+class MountScrapRepairTransaction:
+    waypointSymbol: str
+    shipSymbol: str
+    tradeSymbol: Optional[TradeSymbol]
+    totalPrice: int
+    timestamp: str
 
 
 @dataclass

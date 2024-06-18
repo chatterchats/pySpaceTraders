@@ -91,7 +91,7 @@ from pySpaceTraders.models.response import (
 )
 from pySpaceTraders.models.response.generic import ApiError
 from pySpaceTraders.models.ships import Ship, ShipCooldown, ShipNav
-from pySpaceTraders.models.shipyards import Shipyard
+from pySpaceTraders.models.shipyards import Shipyard, MountScrapRepairTransaction
 from pySpaceTraders.models.systems import System
 from pySpaceTraders.models.waypoints import Waypoint
 
@@ -287,7 +287,7 @@ class PySpaceParser:
             else cargo_dict
         )
 
-        return self.response_to_class(ShipNav, cargo_dict)
+        return self.response_to_class(Cargo, cargo_dict)
 
     def navigate_jump_warp_ship(self, navigate_dict: dict) -> NavigateShip:
         navigate_dict = navigate_dict["data"] if "data" in navigate_dict else navigate_dict
@@ -336,22 +336,29 @@ class PySpaceParser:
 
         return self.response_to_class(InstallRemoveMount, mount_dict)
 
-    def get_scrap_ship(self, scrap_ship_dict: dict) -> MarketTransaction:
+    def get_scrap_ship(self, scrap_ship_dict: dict) -> MountScrapRepairTransaction:
         scrap_ship_dict = scrap_ship_dict["data"] if "data" in scrap_ship_dict else scrap_ship_dict
+        scrap_ship_dict = (
+            scrap_ship_dict["transaction"] if "transaction" in scrap_ship_dict else scrap_ship_dict
+        )
 
-        return self.response_to_class(MarketTransaction, scrap_ship_dict)
+        return self.response_to_class(MountScrapRepairTransaction, scrap_ship_dict)
 
     def scrap_ship(self, scrap_ship_dict: dict) -> ScrapShip:
         scrap_ship_dict = scrap_ship_dict["data"] if "data" in scrap_ship_dict else scrap_ship_dict
 
         return self.response_to_class(ScrapShip, scrap_ship_dict)
 
-    def get_repair_ship(self, repair_ship_dict: dict) -> MarketTransaction:
+    def get_repair_ship(self, repair_ship_dict: dict) -> MountScrapRepairTransaction:
         repair_ship_dict = (
             repair_ship_dict["data"] if "data" in repair_ship_dict else repair_ship_dict
         )
-
-        return self.response_to_class(MarketTransaction, repair_ship_dict)
+        repair_ship_dict = (
+            repair_ship_dict["transaction"]
+            if "transaction" in repair_ship_dict
+            else repair_ship_dict
+        )
+        return self.response_to_class(MountScrapRepairTransaction, repair_ship_dict)
 
     def repair_ship(self, repair_ship_dict: dict) -> RepairShip:
         repair_ship_dict = (

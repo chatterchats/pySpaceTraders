@@ -55,6 +55,7 @@ from pySpaceTraders.models.ships import (
     Survey,
     ShipRefineIO,
 )
+from pySpaceTraders.models.shipyards import MountScrapRepairTransaction
 from pySpaceTraders.models.systems import System
 from pySpaceTraders.models.waypoints import Waypoint, Chart
 
@@ -160,17 +161,17 @@ class InstallRemoveMount:
     agent: Agent
     mounts: List[ShipMount]
     cargo: Cargo
-    transaction: MarketTransaction
+    transaction: MountScrapRepairTransaction
 
 
 @dataclass
 class ScrapShip:
     agent: Agent
-    transaction: MarketTransaction
+    transaction: MountScrapRepairTransaction
 
 
 @dataclass
 class RepairShip:
     agent: Agent
     ship: Ship
-    transaction: MarketTransaction
+    transaction: MountScrapRepairTransaction
