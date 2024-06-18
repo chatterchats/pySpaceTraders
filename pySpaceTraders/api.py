@@ -267,8 +267,8 @@ class SpaceTraderClient:
     ) -> DeliverCargoToContract | ApiError:
         """ContractDeliver cargo for a given contract."""
         data = {
-            "ship_symbol": ship_symbol,
-            "trade_symbol": trade_symbol,
+            "shipSymbol": ship_symbol,
+            "tradeSymbol": trade_symbol,
             "units": units,
         }
         response = self.request.api(
@@ -396,12 +396,15 @@ class SpaceTraderClient:
         return self.parser.create_survey(response)
 
     def extract_resources(
-        self, ship_symbol: str, survey: Optional[Survey | Dict[str, str | List[str]]] = None
+        self, ship_symbol: str, survey: Survey | dict = None
     ) -> ExtractResources | ApiError:
         endpoint = "/my/ships/{}/extract"
-        if survey is not None:
+        if survey:
             endpoint += "/survey"
-        response = self.request.api("POST", endpoint, path_param=ship_symbol)
+            payload = survey.get_payload() if isinstance(survey, Survey) else survey
+            response = self.request.api("POST", endpoint, path_param=ship_symbol, payload=payload)
+        else:
+            response = self.request.api("POST", endpoint, path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.extract_resources(response)
