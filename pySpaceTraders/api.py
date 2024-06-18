@@ -517,7 +517,7 @@ class SpaceTraderClient:
     def purchase_cargo(
         self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> BuySellCargo | ApiError:
-        payload = {"tradeSymbol": trade_symbol.value, "units": units}
+        payload = {"symbol": trade_symbol.value, "units": units}
         response = self.request.api(
             "POST", "/my/ships/{}/purchase", path_param=ship_symbol, payload=payload
         )
