@@ -45,9 +45,9 @@ from pySpaceTraders.models.constructionsites import ConstructionSite
 from pySpaceTraders.models.contracts import Contract
 from pySpaceTraders.models.factions import Faction
 from pySpaceTraders.models.jumpgates import JumpGate
-from pySpaceTraders.models.markets import Market
+from pySpaceTraders.models.markets import Market, MarketTransaction
 from pySpaceTraders.models.ships import Ship, ShipCooldown, Survey, ShipNav
-from pySpaceTraders.models.shipyards import Shipyard
+from pySpaceTraders.models.shipyards import Shipyard, MountScrapRepairTransaction
 from pySpaceTraders.models.systems import System
 from pySpaceTraders.models.waypoints import Waypoint
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
@@ -415,7 +415,7 @@ class SpaceTraderClient:
     def jettison_cargo(
         self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> Cargo | ApiError:
-        payload = {"tradeSymbol": trade_symbol.value, "units": units}
+        payload = {"symbol": trade_symbol.value, "units": units}
         response = self.request.api(
             "POST", "/my/ships/{}/jettison", path_param=ship_symbol, payload=payload
         )
@@ -470,7 +470,7 @@ class SpaceTraderClient:
     def sell_cargo(
         self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> BuySellCargo | ApiError:
-        payload = {"tradeSymbol": trade_symbol.value, "units": units}
+        payload = {"symbol": trade_symbol.value, "units": units}
         response = self.request.api(
             "POST", "/my/ships/{}/sell", path_param=ship_symbol, payload=payload
         )
@@ -568,11 +568,11 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.install_remove_mount(response)
 
-    def get_ship_scrap_value(self, ship_symbol: str) -> ScrapShip | ApiError:
+    def get_ship_scrap_value(self, ship_symbol: str) -> MountScrapRepairTransaction | ApiError:
         response = self.request.api("GET", "/my/ships/{}/scrap", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.scrap_ship(response)
+        return self.parser.get_scrap_ship(response)
 
     def scrap_ship(self, ship_symbol: str) -> ScrapShip | ApiError:
         response = self.request.api("POST", "/my/ships/{}/scrap", path_param=ship_symbol)
@@ -580,11 +580,11 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.scrap_ship(response)
 
-    def get_repair_ship_cost(self, ship_symbol: str) -> RepairShip | ApiError:
+    def get_repair_ship_cost(self, ship_symbol: str) -> MountScrapRepairTransaction | ApiError:
         response = self.request.api("GET", "/my/ships/{}/repair", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
-        return self.parser.repair_ship(response)
+        return self.parser.get_repair_ship(response)
 
     def repair_ship(self, ship_symbol: str) -> RepairShip | ApiError:
         response = self.request.api("POST", "/my/ships/{}/repair", path_param=ship_symbol)
