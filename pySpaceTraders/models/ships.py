@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import List, Optional
 
 from pySpaceTraders.models.cargo import Cargo
@@ -160,7 +160,7 @@ class ShipExtractionYield:
 @dataclass
 class ShipExtraction:
     shipSymbol: str
-    amount: ShipExtractionYield
+    yields: ShipExtractionYield
 
 
 @dataclass
@@ -183,6 +183,12 @@ class Survey:
     deposits: List[ShipDeposit]
     expiration: str
     size: str
+
+    def get_payload(self) -> dict:
+        initial_dict = asdict(self)
+        for deposit in initial_dict["deposits"]:
+            deposit["symbol"] = deposit["symbol"].value
+        return initial_dict
 
 
 @dataclass
