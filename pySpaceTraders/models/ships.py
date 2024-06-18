@@ -29,36 +29,36 @@ class ShipRequirements:
 @dataclass
 class ShipFrame:
     symbol: ShipFrameSymbol
-    name: str
-    description: str
-    condition: float
-    integrity: float
-    moduleSlots: int
-    mountingPoints: int
-    fuelCapacity: int
-    requirements: ShipRequirements
+    name: Optional[str]
+    description: Optional[str]
+    condition: Optional[float]
+    integrity: Optional[float]
+    moduleSlots: Optional[int]
+    mountingPoints: Optional[int]
+    fuelCapacity: Optional[int]
+    requirements: Optional[ShipRequirements]
 
 
 @dataclass
 class ShipReactor:
     symbol: ShipReactorSymbol
-    name: str
-    description: str
+    name: Optional[str]
+    description: Optional[str]
     condition: Optional[float]
-    integrity: float
-    powerOutput: int
-    requirements: ShipRequirements
+    integrity: Optional[float]
+    powerOutput: Optional[int]
+    requirements: Optional[ShipRequirements]
 
 
 @dataclass
 class ShipEngine:
     symbol: ShipEngineSymbol
-    name: str
-    description: str
+    name: Optional[str]
+    description: Optional[str]
     condition: Optional[float]
-    integrity: float
-    speed: int
-    requirements: ShipRequirements
+    integrity: Optional[float]
+    speed: Optional[int]
+    requirements: Optional[ShipRequirements]
 
 
 @dataclass
@@ -74,11 +74,11 @@ class ShipModule:
 @dataclass
 class ShipMount:
     symbol: ShipMountSymbol
-    name: str
+    name: Optional[str]
     description: Optional[str]
     strength: Optional[int]
     deposits: Optional[List[DepositSymbol]]
-    requirements: ShipRequirements
+    requirements: Optional[ShipRequirements]
 
 
 @dataclass
@@ -202,11 +202,11 @@ class Ship:
     symbol: str
     registration: ShipRegistration
     nav: ShipNav
-    crew: ShipCrew
-    frame: ShipFrame
-    reactor: ShipReactor
+    crew: Optional[ShipCrew]
+    frame: Optional[ShipFrame]
+    reactor: Optional[ShipReactor]
     engine: ShipEngine
-    modules: List[ShipModule]
-    mounts: List[ShipMount]
-    cargo: Cargo
-    fuel: ShipFuel
+    modules: Optional[List[ShipModule]]
+    mounts: Optional[List[ShipMount]]
+    cargo: Optional[Cargo]
+    fuel: Optional[ShipFuel]

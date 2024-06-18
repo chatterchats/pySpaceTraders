@@ -25,13 +25,13 @@ from pySpaceTraders.models.waypoints import Waypoint
 
 @dataclass
 class ListSystems:
-    systems: List[System]
+    data: List[System]
     meta: ListMeta
 
 
 @dataclass
 class ListWaypoints:
-    waypoints: List[Waypoint]
+    data: List[Waypoint]
     meta: ListMeta
 
 

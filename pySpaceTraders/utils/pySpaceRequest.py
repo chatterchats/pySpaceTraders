@@ -72,9 +72,11 @@ class PySpaceRequest:
         """
         if path_param:
             if "{}" in endpoint:
-                if path_param is not tuple:
-                    path_param = path_param
-                endpoint = endpoint.format(*path_param)
+                if isinstance(path_param, str):
+                    endpoint = endpoint.format(*[path_param])
+                else:
+                    endpoint = endpoint.format(*path_param)
+
             else:
                 endpoint = f"{endpoint}/{path_param}"
 
@@ -88,7 +90,9 @@ class PySpaceRequest:
             if self.logger:
                 self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
                 self.logger.debug(
-                    f"Path Param: {path_param} | Query Param: {str(query_params)} | Payload: {payload}"
+                    f"Path Param: {path_param} | "
+                    f"Query Param: {str(query_params)} | "
+                    f"Payload: {payload}"
                 )
                 self.logger.debug(
                     f"Constructed URL: {response.url} | Response: {response.status_code}"

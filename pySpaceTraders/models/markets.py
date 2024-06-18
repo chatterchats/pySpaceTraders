@@ -46,7 +46,7 @@ class MarketTradeGood:
     type: str
     tradeVolume: int
     supply: SupplyLevel
-    activity: ActivityLevel
+    activity: Optional[ActivityLevel]
     purchasePrice: int
     sellPrice: int
 
