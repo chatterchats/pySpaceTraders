@@ -101,11 +101,13 @@ class PySpaceRequest:
             if "application/json" in response.headers.get("Content-Type", ""):
                 return response.json()
             elif "cooldown" in str(response.url):
+                now = datetime.now()
                 return {
                     "shipSymbol": path_param,
                     "totalSeconds": 0,
                     "remainingSeconds": 0,
-                    "expiration": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%LZ"),
+                    "expiration": now.strftime("%Y-%m-%dT%H:%M:%S.")
+                    + f"{(now.microsecond // 1000):03d}Z",
                 }
             else:
                 return response.text
