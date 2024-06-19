@@ -22,14 +22,18 @@ Easily done with:
 some_dict = some_dict["data"] if "data" in some_dict else some_dict
 """
 
+from typing import TYPE_CHECKING
 from dacite import from_dict, Config
 
 from pySpaceTraders.models.models import *
 
+if TYPE_CHECKING:
+    from pySpaceTraders import SpaceTraderClient
+
 
 @dataclass
 class PySpaceParser:
-    ApiInstance: Any
+    ApiInstance: "SpaceTraderClient"
     config: Optional[Config] | None = None
 
     def __post_init__(self):
