@@ -49,8 +49,13 @@ client = SpaceTraderClient(
 
 player = client.my_agent()
 >>> player
-MyAgent(symbol="NEWUSER", headquarters="AA-BBB-CC", credits=175000, startingFaction="COSMIC", shipCount=2,
-        accountId="abcdefghijklmnopqrstuvwxy")
+MyAgent(symbol="NEWUSER", 
+        headquarters="AA-BBB-CC", 
+        credits=175000, 
+        startingFaction="COSMIC",
+        shipCount=2,
+        accountId="abcdefghijklmnopqrstuvwxy"
+)
 
 >>> player.symbol
 "NEWUSER"
