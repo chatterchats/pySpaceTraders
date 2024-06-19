@@ -61,7 +61,7 @@ class Contract:
             response = self.ApiInstance.accept_contract(self.id)
             print(response)
             if response is "AcceptContract":
-                self.update_contract(response.get_contract)
+                self.update_contract(response.contract)
                 return True
             elif response is ApiError:
                 print(ApiError)
@@ -86,4 +86,4 @@ class Contract:
         else:
             response = self.ApiInstance.fulfill_contract(self.id)
             if response is "FulfillContract":
-                self.update_contract(response.get_contract)
+                self.update_contract(response.contract)
