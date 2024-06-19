@@ -1,7 +1,14 @@
-from dataclasses import dataclass, asdict
-from typing import Optional, List, Any
+from dataclasses import dataclass
+from typing import Optional, List, TYPE_CHECKING
 
 from pySpaceTraders.models.enums import *
+
+if TYPE_CHECKING:
+    from pySpaceTraders import SpaceTraderClient
+
+###################
+# --- GENERIC --- #
+###################
 
 
 @dataclass
@@ -10,6 +17,17 @@ class ListMeta:
     page: int
     pages: int
     limit: int
+
+
+@dataclass
+class ApiError:
+    error: str
+    message: str
+
+
+##################
+# --- AGENTS --- #
+##################
 
 
 @dataclass
@@ -28,39 +46,9 @@ class ListAgents:
     meta: ListMeta
 
 
-@dataclass
-class Item:
-    symbol: TradeSymbol
-    name: str
-    description: str
-    units: int
-
-
-@dataclass
-class Cargo:
-    capacity: int
-    units: int
-    inventory: List[Item]
-
-
-@dataclass
-class ConstructionMaterial:
-    tradeSymbol: TradeSymbol
-    required: int
-    fulfilled: int
-
-
-@dataclass
-class ConstructionSite:
-    symbol: str
-    materials: List[ConstructionMaterial]
-    isComplete: bool
-
-
-@dataclass
-class SupplyConstructionSite:
-    constructionSite: ConstructionSite
-    cargo: Cargo
+####################
+# --- CONTRACT --- #
+####################
 
 
 @dataclass
@@ -102,7 +90,7 @@ class Contract:
     fulfilled: bool
     expiration: str
     deadlineToAccept: Optional[str]
-    ApiInstance: Optional[Any]
+    ApiInstance: Optional["SpaceTraderClient"]
 
     def update_contract(self, contract_in) -> None:
         for k, v in contract_in.__dict__.items():
@@ -127,13 +115,18 @@ class AcceptContract:
 @dataclass
 class DeliverCargo:
     contract: Contract
-    cargo: Cargo
+    cargo: "Cargo"
 
 
 @dataclass
 class FulfillContract:
     agent: Agent
     contract: Contract
+
+
+####################
+# --- FACTIONS --- #
+####################
 
 
 @dataclass
@@ -159,16 +152,88 @@ class ListFactions:
     meta: ListMeta
 
 
-@dataclass
-class ApiError:
-    error: str
-    message: str
+#####################
+# --- WAYPOINTS --- #
+#####################
 
 
 @dataclass
-class JumpGate:
+class ChartWaypoint:
+    waypointSymbol: Optional[str]
+    submittedBy: Optional[str]
+    submittedOn: Optional[str]
+
+
+@dataclass
+class WaypointModifier:
+    symbol: WaypointModifierSymbol
+    name: str
+    description: str
+
+
+@dataclass
+class WaypointTrait:
+    symbol: WaypointTraitSymbol
+    name: str
+    description: str
+
+
+@dataclass
+class WaypointFactionSymbol:
+    symbol: FactionSymbol
+
+
+@dataclass
+class Orbital:
     symbol: str
-    connection: List[str] | None
+
+
+@dataclass
+class SystemWaypoint:
+    symbol: str
+    type: WaypointType
+    x: int
+    y: int
+    orbitals: List[Orbital]
+    orbits: Optional[str]
+
+
+@dataclass
+class Waypoint(SystemWaypoint):
+    systemSymbol: str
+    isUnderConstruction: bool
+    traits: List[WaypointTrait]
+    faction: Optional[WaypointFactionSymbol]
+    modifiers: Optional[List[WaypointModifier]]
+    chart: Optional[ChartWaypoint]
+
+
+###################
+# --- Systems --- #
+###################
+
+
+@dataclass
+class System:
+    symbol: str
+    sectorSymbol: str
+    type: SystemType
+    x: int
+    y: int
+    waypoints: Optional[List[SystemWaypoint]]
+    factions: Optional[List[FactionSymbol]]
+
+
+@dataclass
+class ListSystems:
+    data: List[System]
+    meta: ListMeta
+
+
+@dataclass
+class ListWaypoints:
+    data: List[Waypoint]
+    meta: ListMeta
 
 
 @dataclass
@@ -209,6 +274,52 @@ class Market:
     exchange: List[MarketImportExportExchange]
     transactions: Optional[List[MarketTransaction]]
     tradeGoods: Optional[List[MarketTradeGood]]
+
+
+@dataclass
+class Item:
+    symbol: TradeSymbol
+    name: str
+    description: str
+    units: int
+
+
+@dataclass
+class Cargo:
+    capacity: int
+    units: int
+    inventory: List[Item]
+
+
+@dataclass
+class ConstructionMaterial:
+    tradeSymbol: TradeSymbol
+    required: int
+    fulfilled: int
+
+
+@dataclass
+class JumpGate:
+    symbol: str
+    connection: List[str] | None
+
+
+@dataclass
+class ConstructionSite:
+    symbol: str
+    materials: List[ConstructionMaterial]
+    isComplete: bool
+
+
+@dataclass
+class SupplyConstructionSite:
+    constructionSite: ConstructionSite
+    cargo: Cargo
+
+
+#################
+# --- FLEET --- #
+#################
 
 
 @dataclass
@@ -376,12 +487,6 @@ class Survey:
     expiration: str
     size: str
 
-    def get_payload(self) -> dict:
-        initial_dict = asdict(self)
-        for deposit in initial_dict["deposits"]:
-            deposit["symbol"] = deposit["symbol"].value
-        return initial_dict
-
 
 @dataclass
 class ShipSiphonYields:
@@ -512,48 +617,10 @@ class RepairShip:
 
 
 @dataclass
-class ShipyardTransaction:
-    waypointSymbol: str
-    shipSymbol: ShipType
-    shipType: ShipType
-    price: int
-    agentSymbol: str
-    timestamp: str
-
-
-@dataclass
-class ShipyardShip:
-    type: ShipType
-    name: str
-    description: str
-    supply: SupplyLevel
-    activity: ActivityLevel
-    purchasePrice: int
-    frame: ShipFrame
-    reactor: ShipReactor
-    modules: List[ShipModule]
-    mounts: List[ShipMount]
-
-
-@dataclass
-class ShipyardShipType:
-    type: ShipType
-
-
-@dataclass
-class Shipyard:
-    symbol: str
-    shipTypes: List[ShipyardShipType]
-    transactions: Optional[List[ShipyardTransaction]]
-    ships: Optional[List[ShipyardShip]]
-    modificationsFee: int
-
-
-@dataclass
 class PurchaseShip:
     agent: Agent
     ship: Ship
-    transaction: ShipyardTransaction
+    transaction: "ShipyardTransaction"
 
 
 @dataclass
@@ -614,89 +681,15 @@ class Status:
 
 
 @dataclass
-class Orbital:
-    symbol: str
-
-
-@dataclass
-class SystemWaypoint:
-    symbol: str
-    type: WaypointType
-    x: int
-    y: int
-    orbitals: List[Orbital]
-    orbits: Optional[str]
-
-
-@dataclass
-class System:
-    symbol: str
-    sectorSymbol: str
-    type: SystemType
-    x: int
-    y: int
-    waypoints: Optional[List[SystemWaypoint]]
-    factions: Optional[List[FactionSymbol]]
-
-
-@dataclass
 class ScanSystems:
     cooldown: ShipCooldown
     systems: List[System]
 
 
 @dataclass
-class ListSystems:
-    data: List[System]
-    meta: ListMeta
-
-
-@dataclass
-class WaypointModifier:
-    symbol: WaypointModifierSymbol
-    name: str
-    description: str
-
-
-@dataclass
-class WaypointTrait:
-    symbol: WaypointTraitSymbol
-    name: str
-    description: str
-
-
-@dataclass
-class Chart:
-    waypointSymbol: Optional[str]
-    submittedBy: Optional[str]
-    submittedOn: Optional[str]
-
-
-@dataclass
-class WaypointFactionSymbol:
-    symbol: FactionSymbol
-
-
-@dataclass
-class Waypoint(SystemWaypoint):
-    systemSymbol: str
-    isUnderConstruction: bool
-    traits: List[WaypointTrait]
-    faction: Optional[WaypointFactionSymbol]
-    modifiers: Optional[List[WaypointModifier]]
-    chart: Optional[Chart]
-
-
-@dataclass
 class ScanWaypoints:
     cooldown: ShipCooldown
     waypoints: List[Waypoint]
-
-
-@dataclass
-class ListWaypoints:
-    data: List[Waypoint]
-    meta: ListMeta
 
 
 class RegisterNewAgent:
@@ -709,5 +702,48 @@ class RegisterNewAgent:
 
 @dataclass
 class CreateChart:
-    chart: Chart
+    chart: ChartWaypoint
     waypoint: Waypoint
+
+
+####################
+# --- SHIPYARD --- #
+####################
+
+
+@dataclass
+class ShipyardShip:
+    type: ShipType
+    name: str
+    description: str
+    supply: SupplyLevel
+    activity: ActivityLevel
+    purchasePrice: int
+    frame: ShipFrame
+    reactor: ShipReactor
+    modules: List[ShipModule]
+    mounts: List[ShipMount]
+
+
+@dataclass
+class ShipyardShipType:
+    type: ShipType
+
+
+@dataclass
+class ShipyardTransaction:
+    waypointSymbol: str
+    shipSymbol: ShipType
+    shipType: ShipType
+    price: int
+    agentSymbol: str
+    timestamp: str
+
+
+@dataclass
+class Shipyard:
+    symbol: str
+    shipTypes: List[ShipyardShipType]
+    transactions: Optional[List[ShipyardTransaction]]
+    ships: Optional[List[ShipyardShip]]
+    modificationsFee: int
