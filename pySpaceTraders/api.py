@@ -2,57 +2,15 @@ import inspect
 import json
 import math
 import os.path
-from typing import List, Optional, Dict
 
-from pySpaceTraders.models.enums import (
-    FactionSymbol,
-    TradeSymbol,
-    WaypointType,
-    WaypointTraitSymbol,
-    ShipType,
-    ShipNavFlightMode,
-    RefinedGoodSymbol,
-)
-from pySpaceTraders.models.response import (
-    ApiError,
-    AcceptContract,
-    DeliverCargoToContract,
-    PurchaseShip,
-    ShipRefine,
-    CreateSurvey,
-    ExtractResources,
-    CreateChart,
-    ListSystems,
-    ListWaypoints,
-    SupplyConstructionSite,
-    ListFactions,
-    ListContracts,
-    ListAgents,
-    NavigateShip,
-    BuySellCargo,
-    ScanSystems,
-    ScanWaypoints,
-    ScanShips,
-    RefuelShip,
-    GetMounts,
-    InstallRemoveMount,
-    ScrapShip,
-    RepairShip,
-)
-from pySpaceTraders.models.agents import Agent
-from pySpaceTraders.models.cargo import Cargo
-from pySpaceTraders.models.constructionsites import ConstructionSite
-from pySpaceTraders.models.contracts import Contract
-from pySpaceTraders.models.factions import Faction
-from pySpaceTraders.models.jumpgates import JumpGate
-from pySpaceTraders.models.markets import Market, MarketTransaction
-from pySpaceTraders.models.ships import Ship, ShipCooldown, Survey, ShipNav
-from pySpaceTraders.models.shipyards import Shipyard, MountScrapRepairTransaction
-from pySpaceTraders.models.systems import System
-from pySpaceTraders.models.waypoints import Waypoint
+from pySpaceTraders.models.models import *
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
 from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
+
+
+class DeliverCargoToContract:
+    pass
 
 
 class SpaceTraderClient:
@@ -264,7 +222,7 @@ class SpaceTraderClient:
 
     def deliver_contract_cargo(
         self, contract_id: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
-    ) -> DeliverCargoToContract | ApiError:
+    ) -> DeliverCargo | ApiError:
         """ContractDeliver cargo for a given contract."""
         data = {
             "shipSymbol": ship_symbol,
@@ -277,7 +235,7 @@ class SpaceTraderClient:
         if "error" in response:
             return self.parser.error(response)
 
-        return self.parser.deliver_cargo_to_contract(response)
+        return self.parser.deliver_cargo(response)
 
     def fulfill_contract(self, contract_id: str) -> AcceptContract | ApiError:
         """Fulfill (complete) a contract."""
@@ -396,7 +354,7 @@ class SpaceTraderClient:
         return self.parser.create_survey(response)
 
     def extract_resources(
-        self, ship_symbol: str, survey: Survey | dict = None
+        self, ship_symbol: str, survey: Survey | dict | None = None
     ) -> ExtractResources | ApiError:
         endpoint = "/my/ships/{}/extract"
         if survey:
@@ -639,8 +597,8 @@ class SpaceTraderClient:
 
         if traits:
             if isinstance(traits, WaypointTraitSymbol):
-                self.logger.debug(f"Single Trait: {traits}")
-                query.update({"traits": traits})  # type: ignore
+                self.logger.debug(f"Single Trait: {traits.value}")
+                query.update({"traits": traits.value})  # type: ignore
             elif isinstance(traits, list):
                 self.logger.debug("Traits contains multiple traits")
                 trait_list = []

@@ -22,78 +22,9 @@ Easily done with:
 some_dict = some_dict["data"] if "data" in some_dict else some_dict
 """
 
-from dataclasses import dataclass
-from typing import Any, Optional
-
 from dacite import from_dict, Config
 
-from pySpaceTraders.models.agents import Agent
-from pySpaceTraders.models.cargo import Cargo
-from pySpaceTraders.models.constructionsites import ConstructionSite
-from pySpaceTraders.models.contracts import Contract
-from pySpaceTraders.models.enums import (
-    ActivityLevel,
-    ContractType,
-    DepositSymbol,
-    FactionTraitSymbol,
-    FactionSymbol,
-    RefinedGoodSymbol,
-    ShipConditionEventSymbol,
-    ShipEngineSymbol,
-    ShipFrameSymbol,
-    ShipModuleSymbol,
-    ShipMountSymbol,
-    ShipNavStatus,
-    ShipNavFlightMode,
-    ShipReactorSymbol,
-    ShipRole,
-    ShipType,
-    SupplyLevel,
-    SystemType,
-    TradeSymbol,
-    WaypointModifierSymbol,
-    WaypointTraitSymbol,
-    WaypointType,
-)
-from pySpaceTraders.models.errors import Codes
-from pySpaceTraders.models.factions import Faction
-from pySpaceTraders.models.jumpgates import JumpGate
-from pySpaceTraders.models.markets import Market, MarketTransaction
-from pySpaceTraders.models.response import (
-    Status,
-    ListContracts,
-    ListFactions,
-    ListAgents,
-    ListSystems,
-    ListWaypoints,
-    ListShips,
-    SupplyConstructionSite,
-    ExtractResources,
-    SiphonResources,
-    CreateSurvey,
-    CreateChart,
-    PurchaseShip,
-    DeliverCargoToContract,
-    AcceptContract,
-    RegisterNewAgent,
-    FulfillContract,
-    ShipRefine,
-    NavigateShip,
-    BuySellCargo,
-    ScanSystems,
-    ScanWaypoints,
-    ScanShips,
-    RefuelShip,
-    GetMounts,
-    InstallRemoveMount,
-    ScrapShip,
-    RepairShip,
-)
-from pySpaceTraders.models.response.generic import ApiError
-from pySpaceTraders.models.ships import Ship, ShipCooldown, ShipNav
-from pySpaceTraders.models.shipyards import Shipyard, MountScrapRepairTransaction
-from pySpaceTraders.models.systems import System
-from pySpaceTraders.models.waypoints import Waypoint
+from pySpaceTraders.models.models import *
 
 
 @dataclass
@@ -193,13 +124,13 @@ class PySpaceParser:
         accept_contract_dict.update({"ApiInstance": self.ApiInstance})
         return self.response_to_class(AcceptContract, accept_contract_dict)
 
-    def deliver_cargo_to_contract(self, deliver_contract_dict: dict) -> DeliverCargoToContract:
+    def deliver_cargo(self, deliver_contract_dict: dict) -> DeliverCargo:
         deliver_contract_dict = (
             deliver_contract_dict["data"]
             if "data" in deliver_contract_dict
             else deliver_contract_dict
         )
-        return self.response_to_class(DeliverCargoToContract, deliver_contract_dict)
+        return self.response_to_class(DeliverCargo, deliver_contract_dict)
 
     def fulfill_contract(self, fulfill_contract_dict: dict) -> FulfillContract:
         fulfill_contract_dict = (
