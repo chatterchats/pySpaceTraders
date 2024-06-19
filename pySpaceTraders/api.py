@@ -23,6 +23,7 @@ class SpaceTraderClient:
         agent_email: str = "",
         log: bool = True,
         debug: bool = False,
+        testing: bool = False,
     ):
 
         # Logging
@@ -36,7 +37,7 @@ class SpaceTraderClient:
         self.agent_email: str = agent_email if agent_email else ""
 
         # Initialize
-        self.request = PySpaceRequest(logger=self.logger if self.log else None)
+        self.request = PySpaceRequest(logger=self.logger if self.log else None, testing=testing)
         self.parser = PySpaceParser(self)
 
         # Token and Login

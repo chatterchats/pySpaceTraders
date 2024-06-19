@@ -7,7 +7,12 @@
 import httpx
 from datetime import datetime
 
-from pySpaceTraders.constants import V2_STARTRADERS_URL, __version__, REQUEST_TYPES
+from pySpaceTraders.constants import (
+    V2_STARTRADERS_URL,
+    V2_STOPLIGHT_URL,
+    __version__,
+    REQUEST_TYPES,
+)
 from pySpaceTraders.utils.pySpaceLimiter import BurstyLimiter, Limiter
 
 
@@ -26,13 +31,14 @@ class PySpaceRequest:
 
     """
 
-    def __init__(self, logger, server_url: str = V2_STARTRADERS_URL):
+    def __init__(self, logger, testing: bool = False):
         """
         Initializes the PySpaceRequest instance with the provided logger, token, and server URL.
 
         :param PySpaceLogger logger: A logging object used to log information and exceptions.
-        :param str server_url: The base URL for the PySpaceTraders API.
+        :param bool testing: Whether launched in testing mode, uses Stoplight api.
         """
+        server_url = V2_STARTRADERS_URL if not testing else V2_STOPLIGHT_URL
 
         self.logger = logger if logger is not None else None
         self.class_id: str = f"pySpaceTraders/{__version__}"
