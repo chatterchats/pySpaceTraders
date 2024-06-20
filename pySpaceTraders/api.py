@@ -336,7 +336,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.create_chart(response)
 
-    def get_ship_cooldown(self, ship_symbol: str) -> ShipCooldown | ApiError:
+    def get_ship_cooldown(self, ship_symbol: str) -> Cooldown | ApiError:
         response = self.request.api("GET", "/my/ships/{}/cooldown", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -530,7 +530,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.install_remove_mount(response)
 
-    def get_ship_scrap_value(self, ship_symbol: str) -> MountScrapRepairTransaction | ApiError:
+    def get_ship_scrap_value(self, ship_symbol: str) -> ModificationTransaction | ApiError:
         response = self.request.api("GET", "/my/ships/{}/scrap", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -542,7 +542,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.scrap_ship(response)
 
-    def get_repair_ship_cost(self, ship_symbol: str) -> MountScrapRepairTransaction | ApiError:
+    def get_repair_ship_cost(self, ship_symbol: str) -> ModificationTransaction | ApiError:
         response = self.request.api("GET", "/my/ships/{}/repair", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -598,13 +598,13 @@ class SpaceTraderClient:
 
         if traits:
             if isinstance(traits, WaypointTraitSymbol):
-                self.logger.debug(f"Single Trait: {traits.value}")
+                self.logger.debug(f"Single FactionTrait: {traits.value}")
                 query.update({"traits": traits.value})  # type: ignore
             elif isinstance(traits, list):
                 self.logger.debug("Traits contains multiple traits")
                 trait_list = []
                 for trait in traits:
-                    self.logger.debug(f"Trait: {trait}")
+                    self.logger.debug(f"FactionTrait: {trait}")
                     if isinstance(trait, WaypointTraitSymbol):
                         trait_list.append(trait.value)
                 query.update({"traits": trait_list})  # type: ignore
@@ -677,7 +677,7 @@ class SpaceTraderClient:
             return self.parser.error(response)
         return self.parser.get_jump_gate(response)
 
-    def get_construction(self, waypoint_symbol: str) -> ConstructionSite | ApiError:
+    def get_construction(self, waypoint_symbol: str) -> Construction | ApiError:
         """Get waypoint_symbol construction details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(

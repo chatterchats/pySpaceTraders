@@ -14,6 +14,17 @@ class ContractType(StrEnum):
     SHUTTLE = "SHUTTLE"
 
 
+class CrewRotation(StrEnum):
+    STRICT = "STRICT"
+    RELAXED = "RELAXED"
+
+
+class ShipComponent(Enum):
+    FRAME = "FRAME"
+    REACTOR = "REACTOR"
+    ENGINE = "ENGINE"
+
+
 class DepositSymbol(StrEnum):
     QUARTZ_SAND = "QUARTZ_SAND"
     SILICON_CRYSTALS = "SILICON_CRYSTALS"
@@ -115,6 +126,17 @@ class FactionSymbol(StrEnum):
     ETHEREAL = "ETHEREAL"
 
 
+class MarketTransactionType(StrEnum):
+    PURCHASE = "PURCHASE"
+    SELL = "SELL"
+
+
+class MarketTradeGoodType(StrEnum):
+    EXPORT = "EXPORT"
+    IMPORT = "IMPORT"
+    EXCHANGE = "EXCHANGE"
+
+
 class RefinedGoodSymbol(StrEnum):
     IRON = "IRON"
     COPPER = "COPPER"
@@ -127,7 +149,7 @@ class RefinedGoodSymbol(StrEnum):
     FUEL = "FUEL"
 
 
-class ShipConditionEventSymbol(StrEnum):
+class EventSymbol(StrEnum):
     REACTOR_OVERLOAD = "REACTOR_OVERLOAD"
     ENERGY_SPIKE_FROM_MINERAL = "ENERGY_SPIKE_FROM_MINERAL"
     SOLAR_FLARE_INTERFERENCE = "SOLAR_FLARE_INTERFERENCE"
@@ -282,6 +304,12 @@ class SupplyLevel(StrEnum):
     MODERATE = "MODERATE"
     HIGH = "HIGH"
     ABUNDANT = "ABUNDANT"
+
+
+class SurveySize(StrEnum):
+    SMALL = "SMALL"
+    MODERATE = "MODERATE"
+    LARGE = "LARGE"
 
 
 class SystemType(StrEnum):

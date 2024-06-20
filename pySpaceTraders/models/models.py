@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class ListMeta:
+class Meta:
     total: int
     page: int
     pages: int
@@ -43,7 +43,7 @@ class Agent:
 @dataclass
 class ListAgents:
     data: List[Agent]
-    meta: ListMeta
+    meta: Meta
 
 
 ####################
@@ -52,7 +52,7 @@ class ListAgents:
 
 
 @dataclass
-class PaymentTerm:
+class ContractPayment:
     """Represents the payment terms of a contract."""
 
     onAccepted: int
@@ -60,7 +60,7 @@ class PaymentTerm:
 
 
 @dataclass
-class DeliverTerms:
+class ContractDeliverGood:
     """Represents the delivery requirements of a contract."""
 
     tradeSymbol: TradeSymbol
@@ -70,12 +70,12 @@ class DeliverTerms:
 
 
 @dataclass
-class Terms:
+class ContractTerms:
     """Represents the specific terms and conditions of a contract."""
 
     deadline: str
-    payment: PaymentTerm
-    deliver: List[DeliverTerms]
+    payment: ContractPayment
+    deliver: List[ContractDeliverGood]
 
 
 @dataclass
@@ -85,7 +85,7 @@ class Contract:
     id: str
     factionSymbol: FactionSymbol
     type: ContractType
-    terms: Terms
+    terms: ContractTerms
     accepted: bool
     fulfilled: bool
     expiration: str
@@ -103,7 +103,7 @@ class ListContracts:
     """Represents a status_dict containing a list of contracts and associated metadata."""
 
     data: List[Contract]
-    meta: ListMeta
+    meta: Meta
 
 
 @dataclass
@@ -130,7 +130,7 @@ class FulfillContract:
 
 
 @dataclass
-class Trait:
+class FactionTrait:
     symbol: FactionTraitSymbol
     name: str
     description: str
@@ -142,14 +142,14 @@ class Faction:
     name: str
     description: str
     headquarters: str
-    traits: List[Trait]
+    traits: List[FactionTrait]
     isRecruiting: bool
 
 
 @dataclass
 class ListFactions:
     data: List[Faction]
-    meta: ListMeta
+    meta: Meta
 
 
 #####################
@@ -158,7 +158,7 @@ class ListFactions:
 
 
 @dataclass
-class ChartWaypoint:
+class Chart:
     waypointSymbol: Optional[str]
     submittedBy: Optional[str]
     submittedOn: Optional[str]
@@ -179,38 +179,39 @@ class WaypointTrait:
 
 
 @dataclass
-class WaypointFactionSymbol:
+class WaypointFaction:
     symbol: FactionSymbol
 
 
 @dataclass
-class Orbital:
+class WaypointOrbital:
     symbol: str
 
 
 @dataclass
-class SystemWaypoint:
+class Waypoint:
     symbol: str
     type: WaypointType
+    systemSymbol: Optional[str]
     x: int
     y: int
-    orbitals: List[Orbital]
-    orbits: Optional[str]
-
-
-@dataclass
-class Waypoint(SystemWaypoint):
-    systemSymbol: str
-    isUnderConstruction: bool
+    orbitals: List[WaypointOrbital]
     traits: List[WaypointTrait]
-    faction: Optional[WaypointFactionSymbol]
+    isUnderConstruction: Optional[bool]
+    orbits: Optional[str]
+    faction: Optional[WaypointFaction]
     modifiers: Optional[List[WaypointModifier]]
-    chart: Optional[ChartWaypoint]
+    chart: Optional[Chart]
 
 
 ###################
 # --- Systems --- #
 ###################
+
+
+@dataclass
+class SystemFaction:
+    symbol: FactionSymbol
 
 
 @dataclass
@@ -220,24 +221,30 @@ class System:
     type: SystemType
     x: int
     y: int
-    waypoints: Optional[List[SystemWaypoint]]
-    factions: Optional[List[FactionSymbol]]
+    waypoints: List[Waypoint]
+    factions: Optional[List[SystemFaction]]
+    distance: Optional[int]
 
 
 @dataclass
 class ListSystems:
     data: List[System]
-    meta: ListMeta
+    meta: Meta
 
 
 @dataclass
 class ListWaypoints:
     data: List[Waypoint]
-    meta: ListMeta
+    meta: Meta
+
+
+##################
+# --- MARKET --- #
+##################
 
 
 @dataclass
-class MarketImportExportExchange:
+class TradeGood:
     symbol: TradeSymbol
     name: str
     description: str
@@ -248,7 +255,7 @@ class MarketTransaction:
     waypointSymbol: str
     shipSymbol: str
     tradeSymbol: TradeSymbol
-    type: str
+    type: MarketTransactionType
     units: int
     pricePerUnit: int
     totalPrice: int
@@ -258,26 +265,26 @@ class MarketTransaction:
 @dataclass
 class MarketTradeGood:
     symbol: TradeSymbol
-    type: str
+    type: MarketTradeGoodType
     tradeVolume: int
     supply: SupplyLevel
-    activity: Optional[ActivityLevel]
     purchasePrice: int
     sellPrice: int
+    activity: Optional[ActivityLevel]
 
 
 @dataclass
 class Market:
     symbol: str
-    exports: List[MarketImportExportExchange]
-    imports: List[MarketImportExportExchange]
-    exchange: List[MarketImportExportExchange]
+    exports: List[TradeGood]
+    imports: List[TradeGood]
+    exchange: List[TradeGood]
     transactions: Optional[List[MarketTransaction]]
     tradeGoods: Optional[List[MarketTradeGood]]
 
 
 @dataclass
-class Item:
+class CargoItem:
     symbol: TradeSymbol
     name: str
     description: str
@@ -288,7 +295,13 @@ class Item:
 class Cargo:
     capacity: int
     units: int
-    inventory: List[Item]
+    inventory: List[CargoItem]
+
+
+@dataclass
+class JumpGate:
+    symbol: str
+    connection: List[str] | None
 
 
 @dataclass
@@ -299,13 +312,7 @@ class ConstructionMaterial:
 
 
 @dataclass
-class JumpGate:
-    symbol: str
-    connection: List[str] | None
-
-
-@dataclass
-class ConstructionSite:
+class Construction:
     symbol: str
     materials: List[ConstructionMaterial]
     isComplete: bool
@@ -313,7 +320,7 @@ class ConstructionSite:
 
 @dataclass
 class SupplyConstructionSite:
-    constructionSite: ConstructionSite
+    constructionSite: Construction
     cargo: Cargo
 
 
@@ -323,23 +330,20 @@ class SupplyConstructionSite:
 
 
 @dataclass
+class ShipCrew:
+    current: int
+    required: int
+    capacity: int
+    rotation: CrewRotation
+    morale: int
+    wages: int
+
+
+@dataclass
 class ShipRequirements:
     power: Optional[int]
     crew: Optional[int]
     slots: Optional[int]
-
-
-@dataclass
-class ShipFrame:
-    symbol: ShipFrameSymbol
-    name: Optional[str]
-    description: Optional[str]
-    condition: Optional[float]
-    integrity: Optional[float]
-    moduleSlots: Optional[int]
-    mountingPoints: Optional[int]
-    fuelCapacity: Optional[int]
-    requirements: Optional[ShipRequirements]
 
 
 @dataclass
@@ -365,6 +369,14 @@ class ShipEngine:
 
 
 @dataclass
+class Cooldown:
+    shipSymbol: str
+    totalSeconds: int
+    remainingSeconds: int
+    expiration: str
+
+
+@dataclass
 class ShipModule:
     symbol: ShipModuleSymbol
     name: str
@@ -385,7 +397,20 @@ class ShipMount:
 
 
 @dataclass
-class ShipFuelConsumed:
+class ShipFrame:
+    symbol: ShipFrameSymbol
+    name: Optional[str]
+    description: Optional[str]
+    condition: Optional[float]
+    integrity: Optional[float]
+    moduleSlots: Optional[int]
+    mountingPoints: Optional[int]
+    fuelCapacity: Optional[int]
+    requirements: Optional[ShipRequirements]
+
+
+@dataclass
+class FuelConsumed:
     amount: int
     timestamp: str
 
@@ -394,7 +419,7 @@ class ShipFuelConsumed:
 class ShipFuel:
     current: int
     capacity: int
-    consumed: Optional[ShipFuelConsumed]
+    consumed: Optional[FuelConsumed]
 
 
 @dataclass
@@ -405,7 +430,7 @@ class ShipRegistration:
 
 
 @dataclass
-class ShipNavRouteLocation:
+class ShipNavRouteWaypoint:
     symbol: str
     type: WaypointType
     systemSymbol: str
@@ -415,8 +440,8 @@ class ShipNavRouteLocation:
 
 @dataclass
 class ShipNavRoute:
-    destination: ShipNavRouteLocation
-    origin: ShipNavRouteLocation
+    destination: ShipNavRouteWaypoint
+    origin: ShipNavRouteWaypoint
     departureTime: str
     arrival: str
 
@@ -428,76 +453,6 @@ class ShipNav:
     route: ShipNavRoute
     status: ShipNavStatus
     flightMode: ShipNavFlightMode
-
-
-@dataclass
-class ShipCrew:
-    current: int
-    required: int
-    capacity: int
-    rotation: str
-    morale: int
-    wages: int
-
-
-@dataclass
-class ShipCooldown:
-    shipSymbol: str
-    totalSeconds: int
-    remainingSeconds: int
-    expiration: str
-
-
-@dataclass
-class ShipRefineIO:
-    tradeSymbol: TradeSymbol
-    units: int
-
-
-@dataclass
-class ShipExtractionYield:
-    symbol: TradeSymbol
-    units: int
-
-
-@dataclass
-class ShipExtraction:
-    shipSymbol: str
-    yields: ShipExtractionYield
-
-
-@dataclass
-class ShipDeposit:
-    symbol: DepositSymbol
-
-
-@dataclass
-class ShipEvent:
-    symbol: ShipConditionEventSymbol
-    component: str
-    name: str
-    description: str
-
-
-@dataclass
-class Survey:
-    signature: str
-    symbol: str
-    deposits: List[ShipDeposit]
-    expiration: str
-    size: str
-
-
-@dataclass
-class ShipSiphonYields:
-    symbol: TradeSymbol
-    units: int
-
-
-@dataclass
-class ShipSiphon:
-    shipSymbol: str
-    yields: ShipSiphonYields
 
 
 @dataclass
@@ -516,37 +471,63 @@ class Ship:
 
 
 @dataclass
+class ShipRefineIO:
+    tradeSymbol: TradeSymbol
+    units: int
+
+
+@dataclass
+class ExtractionYield:
+    symbol: TradeSymbol
+    units: int
+
+
+@dataclass
+class Extraction:
+    shipSymbol: str
+    yields: ExtractionYield
+
+
+@dataclass
+class Siphon:
+    shipSymbol: str
+    yields: ExtractionYield
+
+
+@dataclass
+class ShipEvent:
+    symbol: EventSymbol
+    component: ShipComponent
+    name: str
+    description: str
+
+
+@dataclass
 class ListShips:
     data: List[Ship]
-    meta: ListMeta
+    meta: Meta
 
 
 @dataclass
 class ShipRefine:
     cargo: Cargo
-    cooldown: ShipCooldown
+    cooldown: Cooldown
     produced: ShipRefineIO
     consumed: ShipRefineIO
 
 
 @dataclass
-class CreateSurvey:
-    cooldown: ShipCooldown
-    surveys: List[Survey]
-
-
-@dataclass
 class ExtractResources:
-    cooldown: ShipCooldown
-    extraction: ShipExtraction
+    cooldown: Cooldown
+    extraction: Extraction
     cargo: Cargo
     events: List[ShipEvent]
 
 
 @dataclass
 class SiphonResources:
-    cooldown: ShipCooldown
-    siphon: ShipSiphon
+    cooldown: Cooldown
+    siphon: Siphon
     cargo: Cargo
     events: List[ShipEvent]
 
@@ -554,7 +535,7 @@ class SiphonResources:
 @dataclass
 class NavigateShip:
     fuel: ShipFuel
-    cooldown: Optional[ShipCooldown]
+    cooldown: Optional[Cooldown]
     nav: ShipNav
     events: List[ShipEvent]
 
@@ -568,7 +549,7 @@ class BuySellCargo:
 
 @dataclass
 class ScanShips:
-    cooldown: ShipCooldown
+    cooldown: Cooldown
     ships: List[Ship]
 
 
@@ -585,7 +566,7 @@ class GetMounts:
 
 
 @dataclass
-class MountScrapRepairTransaction:
+class ModificationTransaction:
     waypointSymbol: str
     shipSymbol: str
     tradeSymbol: Optional[TradeSymbol]
@@ -600,20 +581,20 @@ class InstallRemoveMount:
     agent: Agent
     mounts: List[ShipMount]
     cargo: Cargo
-    transaction: MountScrapRepairTransaction
+    transaction: ModificationTransaction
 
 
 @dataclass
 class ScrapShip:
     agent: Agent
-    transaction: MountScrapRepairTransaction
+    transaction: ModificationTransaction
 
 
 @dataclass
 class RepairShip:
     agent: Agent
     ship: Ship
-    transaction: MountScrapRepairTransaction
+    transaction: ModificationTransaction
 
 
 @dataclass
@@ -682,13 +663,13 @@ class Status:
 
 @dataclass
 class ScanSystems:
-    cooldown: ShipCooldown
+    cooldown: Cooldown
     systems: List[System]
 
 
 @dataclass
 class ScanWaypoints:
-    cooldown: ShipCooldown
+    cooldown: Cooldown
     waypoints: List[Waypoint]
 
 
@@ -702,8 +683,33 @@ class RegisterNewAgent:
 
 @dataclass
 class CreateChart:
-    chart: ChartWaypoint
+    chart: Chart
     waypoint: Waypoint
+
+
+##################
+# --- SURVEY --- #
+##################
+
+
+@dataclass
+class SurveyDeposit:
+    symbol: DepositSymbol
+
+
+@dataclass
+class Survey:
+    signature: str
+    symbol: str
+    deposits: List[SurveyDeposit]
+    expiration: str
+    size: SurveySize
+
+
+@dataclass
+class CreateSurvey:
+    cooldown: Cooldown
+    surveys: List[Survey]
 
 
 ####################
@@ -726,7 +732,7 @@ class ShipyardShip:
 
 
 @dataclass
-class ShipyardShipType:
+class ShipTypeModel:
     type: ShipType
 
 
@@ -743,7 +749,7 @@ class ShipyardTransaction:
 @dataclass
 class Shipyard:
     symbol: str
-    shipTypes: List[ShipyardShipType]
+    shipTypes: List[ShipTypeModel]
+    modificationsFee: int
     transactions: Optional[List[ShipyardTransaction]]
     ships: Optional[List[ShipyardShip]]
-    modificationsFee: int

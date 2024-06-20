@@ -45,7 +45,7 @@ class PySpaceParser:
                 FactionTraitSymbol,
                 FactionSymbol,
                 RefinedGoodSymbol,
-                ShipConditionEventSymbol,
+                EventSymbol,
                 ShipEngineSymbol,
                 ShipFrameSymbol,
                 ShipModuleSymbol,
@@ -200,10 +200,10 @@ class PySpaceParser:
 
         return self.response_to_class(CreateChart, chart_dict)
 
-    def get_ship_cooldown(self, cooldown_dict: dict) -> ShipCooldown:
+    def get_ship_cooldown(self, cooldown_dict: dict) -> Cooldown:
         cooldown_dict = cooldown_dict["data"] if "data" in cooldown_dict else cooldown_dict
 
-        return self.response_to_class(ShipCooldown, cooldown_dict)
+        return self.response_to_class(Cooldown, cooldown_dict)
 
     def create_survey(self, survey_dict: dict) -> CreateSurvey:
         survey_dict = survey_dict["data"] if "data" in survey_dict else survey_dict
@@ -276,20 +276,20 @@ class PySpaceParser:
 
         return self.response_to_class(InstallRemoveMount, mount_dict)
 
-    def get_scrap_ship(self, scrap_ship_dict: dict) -> MountScrapRepairTransaction:
+    def get_scrap_ship(self, scrap_ship_dict: dict) -> ModificationTransaction:
         scrap_ship_dict = scrap_ship_dict["data"] if "data" in scrap_ship_dict else scrap_ship_dict
         scrap_ship_dict = (
             scrap_ship_dict["transaction"] if "transaction" in scrap_ship_dict else scrap_ship_dict
         )
 
-        return self.response_to_class(MountScrapRepairTransaction, scrap_ship_dict)
+        return self.response_to_class(ModificationTransaction, scrap_ship_dict)
 
     def scrap_ship(self, scrap_ship_dict: dict) -> ScrapShip:
         scrap_ship_dict = scrap_ship_dict["data"] if "data" in scrap_ship_dict else scrap_ship_dict
 
         return self.response_to_class(ScrapShip, scrap_ship_dict)
 
-    def get_repair_ship(self, repair_ship_dict: dict) -> MountScrapRepairTransaction:
+    def get_repair_ship(self, repair_ship_dict: dict) -> ModificationTransaction:
         repair_ship_dict = (
             repair_ship_dict["data"] if "data" in repair_ship_dict else repair_ship_dict
         )
@@ -298,7 +298,7 @@ class PySpaceParser:
             if "transaction" in repair_ship_dict
             else repair_ship_dict
         )
-        return self.response_to_class(MountScrapRepairTransaction, repair_ship_dict)
+        return self.response_to_class(ModificationTransaction, repair_ship_dict)
 
     def repair_ship(self, repair_ship_dict: dict) -> RepairShip:
         repair_ship_dict = (
@@ -344,10 +344,10 @@ class PySpaceParser:
 
         return self.response_to_class(JumpGate, jumpgate_dict)
 
-    def get_construction_site(self, cons_site_dict: dict) -> ConstructionSite:
+    def get_construction_site(self, cons_site_dict: dict) -> Construction:
         cons_site_dict = cons_site_dict["data"] if "data" in cons_site_dict else cons_site_dict
 
-        return self.response_to_class(ConstructionSite, cons_site_dict)
+        return self.response_to_class(Construction, cons_site_dict)
 
     def supply_construction_site(self, cons_cargo_dict: dict) -> SupplyConstructionSite:
         cons_cargo_dict = cons_cargo_dict["data"] if "data" in cons_cargo_dict else cons_cargo_dict
