@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING, Any
 
 from pySpaceTraders.models.enums import *
 
@@ -90,7 +90,7 @@ class Contract:
     fulfilled: bool
     expiration: str
     deadlineToAccept: Optional[str]
-    ApiInstance: Optional["SpaceTraderClient"]
+    ApiInstance: Optional[Any]
 
     def update_contract(self, contract_in) -> None:
         for k, v in contract_in.__dict__.items():
