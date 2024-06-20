@@ -124,6 +124,7 @@ class FactionSymbol(StrEnum):
     ANCIENTS = "ANCIENTS"
     SHADOW = "SHADOW"
     ETHEREAL = "ETHEREAL"
+    DEBUG = "string"
 
 
 class MarketTransactionType(StrEnum):
@@ -469,6 +470,7 @@ class TradeSymbol(StrEnum):
     SHIP_ORE_HOUND = "SHIP_ORE_HOUND"
     SHIP_REFINING_FREIGHTER = "SHIP_REFINING_FREIGHTER"
     SHIP_SURVEYOR = "SHIP_SURVEYOR"
+    DEBUG = "string"
 
 
 class WaypointModifierSymbol(StrEnum):
