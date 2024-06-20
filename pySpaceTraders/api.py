@@ -716,12 +716,12 @@ class SpaceTraderClient:
 
     def supply_construction(
         self, waypoint_symbol: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
-    ) -> SupplyConstructionSite | ApiError:
+    ) -> SupplyConstruction | ApiError:
         """Supply waypoint_symbol construction site."""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         payload = {
-            "ship_symbol": ship_symbol,
-            "trade_symbol": trade_symbol,
+            "shipSymbol": ship_symbol,
+            "tradeSymbol": trade_symbol,
             "units": units,
         }
         response = self.request.api(
