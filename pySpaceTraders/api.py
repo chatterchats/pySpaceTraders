@@ -2,6 +2,7 @@ import inspect
 import json
 import math
 import os.path
+from dataclasses import asdict
 
 from pySpaceTraders.models.models import *
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
@@ -100,7 +101,7 @@ class SpaceTraderClient:
 
         if "data" in response.keys():
             self.logger.debug("Register Successful")
-            self.token = response["data"]["token"]
+            self.token = response.get("data", {})["token"]
             data = {}
             if os.path.isfile("tokens.json"):
                 with open("tokens.json", "r") as f:
@@ -152,15 +153,19 @@ class SpaceTraderClient:
         query = {"limit": 20 if all_agents else limit, "page": page}
         response = self.request.api("GET", "/agents", query_params=query)
 
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
+        response.get("meta", {})["pages"] = math.ceil(
+            response.get("meta", {}).get("total", 1) / limit
+        )
         if "error" in response:
             self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
 
-        if all_agents and response["meta"]["pages"] > 1:
-            response["data"].extend(self.get_all_pages("/agents", response["meta"]["pages"]))
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
+        if all_agents and response.get("meta", {})["pages"] > 1:
+            response["data"].extend(
+                self.get_all_pages("/agents", response.get("meta", {})["pages"])
+            )
+            response.get("meta", {})["page"] = 1
+            response.get("meta", {})["limit"] = len(response["data"])
 
         return self.parser.agent_list(response)
 
@@ -191,12 +196,16 @@ class SpaceTraderClient:
             self.logger.error(f"Error with {inspect.stack()[0][0]}. {self.parser.error(response)}")
             return self.parser.error(response)
 
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
+        response.get("meta", {})["pages"] = math.ceil(
+            response.get("meta", {}).get("total", 1) / limit
+        )
 
-        if all_contracts and response["meta"]["pages"] > 1:
-            response["data"].extend(self.get_all_pages("/my/contracts", response["meta"]["pages"]))
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
+        if all_contracts and response.get("meta", {})["pages"] > 1:
+            response["data"].extend(
+                self.get_all_pages("/my/contracts", response.get("meta", {})["pages"])
+            )
+            response.get("meta", {})["page"] = 1
+            response.get("meta", {})["limit"] = len(response["data"])
 
         return self.parser.list_contracts(response)
 
@@ -258,11 +267,15 @@ class SpaceTraderClient:
         response = self.request.api("GET", "/factions", query_params=query)
         if "error" in response:
             return self.parser.error(response)
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
-        if all_factions and response["meta"]["pages"] > 1:
-            response["data"].extend(self.get_all_pages("/factions", response["meta"]["pages"]))
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
+        response.get("meta", {})["pages"] = math.ceil(
+            response.get("meta", {}).get("total", 1) / limit
+        )
+        if all_factions and response.get("meta", {})["pages"] > 1:
+            response["data"].extend(
+                self.get_all_pages("/factions", response.get("meta", {})["pages"])
+            )
+            response.get("meta", {})["page"] = 1
+            response.get("meta", {})["limit"] = len(response["data"])
 
         return self.parser.list_factions(response)
 
@@ -285,11 +298,15 @@ class SpaceTraderClient:
         if "error" in response:
             return self.parser.error(response)
 
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
-        if all_ships and response["meta"]["pages"] > 1:
-            response["data"].extend(self.get_all_pages("/my/ships", response["meta"]["pages"]))
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
+        response.get("meta", {})["pages"] = math.ceil(
+            response.get("meta", {}).get("total", 1) / limit
+        )
+        if all_ships and response.get("meta", {})["pages"] > 1:
+            response["data"].extend(
+                self.get_all_pages("/my/ships", response.get("meta", {})["pages"])
+            )
+            response.get("meta", {})["page"] = 1
+            response.get("meta", {})["limit"] = len(response["data"])
 
         return self.parser.list_ships(response)
 
@@ -360,7 +377,7 @@ class SpaceTraderClient:
         endpoint = "/my/ships/{}/extract"
         if survey:
             endpoint += "/survey"
-            payload = survey.get_payload() if isinstance(survey, Survey) else survey
+            payload = asdict(survey) if isinstance(survey, Survey) else survey
             response = self.request.api("POST", endpoint, path_param=ship_symbol, payload=payload)
         else:
             response = self.request.api("POST", endpoint, path_param=ship_symbol)
@@ -566,11 +583,15 @@ class SpaceTraderClient:
         response = self.request.api("GET", "/systems", query_params=query)
         if "error" in response:
             return self.parser.error(response)
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
-        if all_systems and confirm_all and response["meta"]["pages"] > 1:
-            response["data"].extend(self.get_all_pages("/systems", response["meta"]["pages"]))
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
+        response.get("meta", {})["pages"] = math.ceil(
+            response.get("meta", {}).get("total", 1) / limit
+        )
+        if all_systems and confirm_all and response.get("meta", {})["pages"] > 1:
+            response["data"].extend(
+                self.get_all_pages("/systems", response.get("meta", {})["pages"])
+            )
+            response.get("meta", {})["page"] = 1
+            response.get("meta", {})["limit"] = len(response["data"])
         return self.parser.list_systems(response)
 
     def get_system(self, system_symbol: str) -> System | ApiError:
@@ -618,15 +639,18 @@ class SpaceTraderClient:
         )
         if "error" in response:
             return self.parser.error(response)
-        response["meta"]["pages"] = math.ceil(response["meta"]["total"] / limit)
-        if all_waypoints and response["meta"]["pages"] > 1:
+        response.get("meta", {})["pages"] = math.ceil(
+            response.get("meta", {}).get("total", 1) / limit
+        )
+        if all_waypoints and response.get("meta", {})["pages"] > 1:
             response["data"].extend(
                 self.get_all_pages(
-                    "/systems/{}/waypoints".format(system_symbol.upper()), response["meta"]["pages"]
+                    "/systems/{}/waypoints".format(system_symbol.upper()),
+                    response.get("meta", {})["pages"],
                 )
             )
-            response["meta"]["page"] = 1
-            response["meta"]["limit"] = len(response["data"])
+            response.get("meta", {})["page"] = 1
+            response.get("meta", {})["limit"] = len(response["data"])
         return self.parser.list_waypoints_in_system(response)
 
     def get_waypoint(self, waypoint_symbol: str) -> Waypoint | ApiError:
