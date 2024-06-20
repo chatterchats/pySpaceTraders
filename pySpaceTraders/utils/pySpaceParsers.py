@@ -41,6 +41,7 @@ class PySpaceParser:
             cast=[
                 ActivityLevel,
                 ContractType,
+                CrewRotation,
                 DepositSymbol,
                 FactionTraitSymbol,
                 FactionSymbol,
