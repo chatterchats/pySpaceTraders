@@ -185,6 +185,7 @@ class ShipEngineSymbol(StrEnum):
     ENGINE_ION_DRIVE_I = "ENGINE_ION_DRIVE_I"
     ENGINE_ION_DRIVE_II = "ENGINE_ION_DRIVE_II"
     ENGINE_HYPER_DRIVE_I = "ENGINE_HYPER_DRIVE_I"
+    DEBUG = "string"
 
 
 class ShipFrameSymbol(StrEnum):
@@ -203,6 +204,7 @@ class ShipFrameSymbol(StrEnum):
     FRAME_DESTROYER = "FRAME_DESTROYER"
     FRAME_CRUISER = "FRAME_CRUISER"
     FRAME_CARRIER = "FRAME_CARRIER"
+    DEBUG = "string"
 
 
 class ShipModuleSymbol(StrEnum):
@@ -226,6 +228,7 @@ class ShipModuleSymbol(StrEnum):
     MODULE_WARP_DRIVE_III = "MODULE_WARP_DRIVE_III"
     MODULE_SHIELD_GENERATOR_I = "MODULE_SHIELD_GENERATOR_I"
     MODULE_SHIELD_GENERATOR_II = "MODULE_SHIELD_GENERATOR_II"
+    DEBUG = "string"
 
 
 class ShipMountSymbol(StrEnum):
@@ -244,6 +247,7 @@ class ShipMountSymbol(StrEnum):
     MOUNT_LASER_CANNON_I = "MOUNT_LASER_CANNON_I"
     MOUNT_MISSILE_LAUNCHER_I = "MOUNT_MISSILE_LAUNCHER_I"
     MOUNT_TURRET_I = "MOUNT_TURRET_I"
+    DEBUG = "string"
 
 
 class ShipNavStatus(StrEnum):
@@ -265,6 +269,7 @@ class ShipReactorSymbol(StrEnum):
     REACTOR_FISSION_I = "REACTOR_FISSION_I"
     REACTOR_CHEMICAL_I = "REACTOR_CHEMICAL_I"
     REACTOR_ANTIMATTER_I = "REACTOR_ANTIMATTER_I"
+    DEBUG = "string"
 
 
 class ShipRole(StrEnum):
@@ -297,6 +302,7 @@ class ShipType(StrEnum):
     SHIP_ORE_HOUND = "SHIP_ORE_HOUND"
     SHIP_REFINING_FREIGHTER = "SHIP_REFINING_FREIGHTER"
     SHIP_SURVEYOR = "SHIP_SURVEYOR"
+    DEBUG = "string"
 
 
 class SupplyLevel(StrEnum):
