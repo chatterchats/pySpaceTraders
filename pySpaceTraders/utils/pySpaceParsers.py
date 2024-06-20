@@ -22,7 +22,6 @@ Easily done with:
 some_dict = some_dict["data"] if "data" in some_dict else some_dict
 """
 
-from typing import TYPE_CHECKING
 from dacite import from_dict, Config
 
 from pySpaceTraders.models.models import *
@@ -47,6 +46,9 @@ class PySpaceParser:
                 FactionSymbol,
                 RefinedGoodSymbol,
                 EventSymbol,
+                MarketTradeGoodType,
+                MarketTransactionType,
+                ShipComponent,
                 ShipEngineSymbol,
                 ShipFrameSymbol,
                 ShipModuleSymbol,
@@ -265,7 +267,8 @@ class PySpaceParser:
         return self.response_to_class(RefuelShip, refuel_dict)
 
     def negotiate_contract(self, contract_dict: dict) -> Contract:
-        contract_dict = contract_dict["data"] if "data" in contract_dict else contract_dict
+        contract_dict = contract_dict.get("data", contract_dict)
+        contract_dict = contract_dict.get("contract", contract_dict)
 
         return self.response_to_class(Contract, contract_dict)
 
@@ -350,10 +353,10 @@ class PySpaceParser:
 
         return self.response_to_class(Construction, cons_site_dict)
 
-    def supply_construction_site(self, cons_cargo_dict: dict) -> SupplyConstructionSite:
+    def supply_construction_site(self, cons_cargo_dict: dict) -> SupplyConstruction:
         cons_cargo_dict = cons_cargo_dict["data"] if "data" in cons_cargo_dict else cons_cargo_dict
 
-        return self.response_to_class(SupplyConstructionSite, cons_cargo_dict)
+        return self.response_to_class(SupplyConstruction, cons_cargo_dict)
 
     #########################
     # --- Misc. Parsers --- #
