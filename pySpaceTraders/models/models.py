@@ -196,7 +196,7 @@ class Waypoint:
     x: int
     y: int
     orbitals: List[WaypointOrbital]
-    traits: List[WaypointTrait]
+    traits: Optional[List[WaypointTrait]]
     isUnderConstruction: Optional[bool]
     orbits: Optional[str]
     faction: Optional[WaypointFaction]
@@ -221,7 +221,7 @@ class System:
     type: SystemType
     x: int
     y: int
-    waypoints: List[Waypoint]
+    waypoints: Optional[List[Waypoint]]
     factions: Optional[List[SystemFaction]]
     distance: Optional[int]
 
@@ -319,8 +319,8 @@ class Construction:
 
 
 @dataclass
-class SupplyConstructionSite:
-    constructionSite: Construction
+class SupplyConstruction:
+    construction: Construction
     cargo: Cargo
 
 
@@ -512,8 +512,8 @@ class ListShips:
 class ShipRefine:
     cargo: Cargo
     cooldown: Cooldown
-    produced: ShipRefineIO
-    consumed: ShipRefineIO
+    produced: List[ShipRefineIO]
+    consumed: List[ShipRefineIO]
 
 
 @dataclass
@@ -534,10 +534,12 @@ class SiphonResources:
 
 @dataclass
 class NavigateShip:
-    fuel: ShipFuel
-    cooldown: Optional[Cooldown]
+    fuel: Optional[ShipFuel]
     nav: ShipNav
-    events: List[ShipEvent]
+    cooldown: Optional[Cooldown]
+    transaction: Optional[MarketTransaction]
+    agent: Optional[Agent]
+    events: Optional[List[ShipEvent]]
 
 
 @dataclass
