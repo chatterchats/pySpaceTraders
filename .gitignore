@@ -1,10 +1,14 @@
+# Ignore all files and directories; Turns .gitignore into a whitelist
 *
-!.github
-!pySpaceTraders
-!tests
+# Whitelists all sub-directories
+!*/
+# Directory Blacklist
+/.idea
+# Root Whitelist
 !.editorconfig
 !.gitignore
 !LICENSE
 !pyproject.toml
 !README.md
-!requirements.txt
+!Pipfile
+!Pipfile.lock

@@ -1,22 +1,17 @@
-[tool.black]
-line-length = 120
-target-version = ['py312']
-
-
 [build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "pySpaceTrader"
-version = "0.0.1"
-authors = [
-    { name = "Chatterchats", email = "chats@irby.us" },
-    { name = "Kejax", email = "kejax@kejax.net" },
-]
 description = "An API wrapper for the SpaceTraders API game"
+version = "0.5.0"
+authors = ["Chatterchats <chats@irby.us>"]
+maintainers = ["Kejax <kejax@kejax.net>"]
 readme = "README.md"
-requires-python = ">=3.12"
+license = "MIT"
+homepage = "https://github.com/chatterchats/pySpaceTrader"
+repository = "https://github.com/chatterchats/pySpaceTrader"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -25,11 +20,25 @@ classifiers = [
     "Programming Language :: Python :: 3.12"
 ]
 
-dependencies = [
-    "httpx~=0.27.0",
-    "dacite~=1.8.1"
-]
+[tool.poetry.dependencies]
+python = "~=3.12.4"
+httpx = "~=0.27.0"
+dacite = "~=1.8.1"
 
-[project.urls]
-Homepage = "https://github.com/chatterchats/pySpaceTrader"
-Issues = "https://github.com/chatterchats/pySpaceTrader/issues"
+[tool.poetry.dev-dependencies]
+black = "~=24.4.2"
+pytest = "~=8.2.2"
+pyright = "~=1.1.366"
+setuptools = ">=61.0"
+jupyter = "*"
+ipykernel = "*"
+
+[tool.pyright]
+verboseOutput = true
+pythonPlatform = "All"
+typeCheckingMode = "standard"
+reportCallIssue = false
+
+[tool.black]
+line-length = 100
+target-version = ['py312']

@@ -4,11 +4,15 @@
 :Authors: ChatterChats
 """
 
-import json
-
 import httpx
+from datetime import datetime
 
-from pySpaceTraders.constants import V2_STARTRADERS_URL, __version__, REQUEST_TYPES
+from pySpaceTraders.constants import (
+    V2_STARTRADERS_URL,
+    V2_STOPLIGHT_URL,
+    __version__,
+    REQUEST_TYPES,
+)
 from pySpaceTraders.utils.pySpaceLimiter import BurstyLimiter, Limiter
 
 
@@ -27,13 +31,14 @@ class PySpaceRequest:
 
     """
 
-    def __init__(self, logger, server_url: str = V2_STARTRADERS_URL):
+    def __init__(self, logger, testing: bool = False):
         """
         Initializes the PySpaceRequest instance with the provided logger, token, and server URL.
 
         :param PySpaceLogger logger: A logging object used to log information and exceptions.
-        :param str server_url: The base URL for the PySpaceTraders API.
+        :param bool testing: Whether launched in testing mode, uses Stoplight api.
         """
+        server_url = V2_STARTRADERS_URL if not testing else V2_STOPLIGHT_URL
 
         self.logger = logger if logger is not None else None
         self.class_id: str = f"pySpaceTraders/{__version__}"
@@ -51,19 +56,19 @@ class PySpaceRequest:
         self.token = token
         self.session.headers.update({"Authorization": f"Bearer {self.token}"})
 
-    @BurstyLimiter(Limiter(2, 1.2), Limiter(10, 10.5))
+    @BurstyLimiter(Limiter(2, 1.2), Limiter(30, 60.6))
     def api(
         self,
         method: str,
         endpoint: str,
-        path_param: str = None,
-        query_params: dict = None,
-        payload: dict = None,
-    ) -> dict:
+        path_param: str | list | None = None,
+        query_params: dict | None = None,
+        payload: dict | None = None,
+    ) -> dict | str:
         """
         Makes an HTTP request to the SpaceTraders specified endpoint.
 
-        :param str method:
+        :param str method: `REQUEST_TYPES`
         :param str endpoint:
         :param str path_param:
         :param dict query_params:
@@ -71,21 +76,44 @@ class PySpaceRequest:
 
         :return dict:
         """
-        self.logger.debug(f"Method: {method}")
-        self.logger.debug(f"Endpoint: {endpoint}")
-        self.logger.debug(f"Path Param: {path_param}")
-        self.logger.debug(f"Query Param: {query_params}")
-        self.logger.debug(f"Payload: {payload}")
         if path_param:
-            endpoint = f"{endpoint}/{path_param}"
+            if "{}" in endpoint:
+                if isinstance(path_param, str):
+                    endpoint = endpoint.format(*[path_param])
+                else:
+                    endpoint = endpoint.format(*path_param)
+
+            else:
+                endpoint = f"{endpoint}/{path_param}"
+
         if method not in REQUEST_TYPES:
-            self.logger.exception(f"Invalid request method: {method}")
             return {"405": f"Invalid request method: {method}"}
         else:
-            self.logger.info(f"{method} {endpoint}")
-            return self.session.request(
-                method=method,
-                url=endpoint,
-                params=query_params,
-                data=(json.dumps(payload, ensure_ascii=False) if payload else None),
-            ).json()
+            response = self.session.request(
+                method=method, url=endpoint, params=query_params, json=payload if payload else None
+            )
+
+            if self.logger:
+                self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
+                self.logger.debug(
+                    f"Path Param: {path_param} | "
+                    f"Query Param: {str(query_params)} | "
+                    f"Payload: {payload}"
+                )
+                self.logger.debug(
+                    f"Constructed URL: {response.url} | Response: {response.status_code}"
+                )
+
+            if "application/json" in response.headers.get("Content-Type", ""):
+                return response.json()
+            elif "cooldown" in str(response.url):
+                now = datetime.now()
+                return {
+                    "shipSymbol": path_param,
+                    "totalSeconds": 0,
+                    "remainingSeconds": 0,
+                    "expiration": now.strftime("%Y-%m-%dT%H:%M:%S.")
+                    + f"{(now.microsecond // 1000):03d}Z",
+                }
+            else:
+                return response.text
