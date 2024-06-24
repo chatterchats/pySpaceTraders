@@ -8,6 +8,7 @@
 !.editorconfig
 !.gitignore
 !LICENSE
+!poetry.lock
 !pyproject.toml
 !README.md
 !Pipfile
