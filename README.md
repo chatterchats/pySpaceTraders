@@ -1,4 +1,4 @@
-# pySpaceTrader
+# pySpaceTraders
 
 pySpaceTrader is a Python-based SDK for the space trading game, **SpaceTraders**, where you can trade goods, explore space, and manage resources. This project is designed to provide a convenient way to access the game\'s API to play the game.
 
@@ -15,29 +15,30 @@ pySpaceTrader is a Python-based SDK for the space trading game, **SpaceTraders**
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/chatterchats/pySpaceTrader.git
+   git clone https://github.com/chatterchats/pySpaceTraders.git
    ```
 2. Navigate to the project directory:
    ```bash
-   cd pySpaceTrader
+   cd pySpaceTraders
    ```
-3. Install pipenv:
-   ```bash
-   python -m pip install --user pipenv
-   ```
+3. Install poetry:   
+   [Poetry Install Documentation](https://python-poetry.org/docs/#installing-with-the-official-installer)
+    
+
 4. Install packages
    ```bash
-    pipenv install --dev
+    poetry install
    ```
 
 ## Usage
 
 To utilize the SDK:
-`TODO: pip install pySpaceTraders`
+```bash
+pip install pySpaceTraders
+```
 
 ```python
-from pySpaceTraders import SpaceTraderClient
-from pySpaceTraders.models.enums import FactionSymbol
+from pySpaceTraders import SpaceTraderClient, FactionSymbol
 
 client = SpaceTraderClient(
     agent_symbol="NEWUSER",
@@ -49,12 +50,13 @@ client = SpaceTraderClient(
 
 player = client.my_agent()
 >>> player
-MyAgent(symbol="NEWUSER", 
-        headquarters="AA-BBB-CC", 
-        credits=175000, 
-        startingFaction="COSMIC",
-        shipCount=2,
-        accountId="abcdefghijklmnopqrstuvwxy"
+Agent(
+    symbol="NEWUSER", 
+    headquarters="AA-BBBB-CC", 
+    credits=175000, 
+    startingFaction=<FactionSymbol.COSMIC: 'COSMIC'>,
+    shipCount=2,
+    accountId="abcdefghijklmnopqrstuvwxy"
 )
 
 >>> player.symbol
