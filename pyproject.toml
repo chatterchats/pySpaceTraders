@@ -3,17 +3,16 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "pySpaceTrader"
+name = "pySpaceTraders"
 description = "An API wrapper for the SpaceTraders API game"
 version = "0.5.0"
 authors = ["Chatterchats <chats@irby.us>"]
 maintainers = ["Kejax <kejax@kejax.net>"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/chatterchats/pySpaceTrader"
 repository = "https://github.com/chatterchats/pySpaceTrader"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -30,8 +29,8 @@ black = "~=24.4.2"
 pytest = "~=8.2.2"
 pyright = "~=1.1.366"
 setuptools = ">=61.0"
-jupyter = "*"
-ipykernel = "*"
+
+[tool.poetry_bumpversion.file."pySpaceTraders/constants.py"]
 
 [tool.pyright]
 verboseOutput = true
@@ -42,3 +41,4 @@ reportCallIssue = false
 [tool.black]
 line-length = 100
 target-version = ['py312']
+
