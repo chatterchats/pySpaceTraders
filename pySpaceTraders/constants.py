@@ -1,18 +1,17 @@
-from typing import List, Literal
+import tomllib
+from typing import List
+from os.path import isfile
 
 ######################
 # --- VERSIONING --- #
 ######################
+# We get the version from pyproject.toml cause fuck defining it in multiple places.
 
-__MAJOR__: int = 0
-__MINOR__: int = 5
-__PATCH__: int = 0
-__SEGMENT__: Literal["a"] | Literal["b"] | Literal["rc"] | Literal["dev"] | Literal[""] = ""
-"""Identifies Alpha, Beta, or Release Candidate pre-release segments"""
-__SEGNUM__: int | Literal[""] = ""
-"""Identifies Alpha, Beta, or Release Candidate pre-release segment number"""
-
-__version__ = f"{__MAJOR__}.{__MINOR__}.{__PATCH__}{__SEGMENT__}{__SEGNUM__ if __SEGMENT__ else ""}"
+pyproject_toml_path = "./pyproject.toml"
+if isfile(pyproject_toml_path):
+    with open(pyproject_toml_path, "rb") as f:
+        data = tomllib.load(f)
+        __version__ = data["tool"]["poetry"]["version"]
 
 ######################
 # --- Endpoints --- #
