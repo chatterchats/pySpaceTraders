@@ -5,6 +5,7 @@ import os.path
 from dataclasses import asdict
 
 from pySpaceTraders.models.models import *
+from pySpaceTraders.constants import __version__
 from pySpaceTraders.utils.pySpaceLogger import PySpaceLogger
 from pySpaceTraders.utils.pySpaceParsers import PySpaceParser
 from pySpaceTraders.utils.pySpaceRequest import PySpaceRequest
@@ -26,7 +27,8 @@ class SpaceTraderClient:
         debug: bool = False,
         testing: bool = False,
     ):
-
+        # version
+        self.__version__ = __version__
         # Logging
         self.log: bool = log
         if self.log:
