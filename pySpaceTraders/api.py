@@ -16,7 +16,7 @@ class DeliverCargoToContract:
 
 
 class SpaceTraderClient:
-    """SpaceTraders API SpaceTraderClient Handler"""
+    """SpaceTraders API Client Handler"""
 
     def __init__(
         self,
@@ -67,7 +67,7 @@ class SpaceTraderClient:
             self._register()
 
     def _register(self):
-
+        """Register a new agent"""
         self.logger.debug("Check Agent Symbol and Faction Validity")
         # Check validity of agent symbol
         if 3 < len(self.agent_symbol) > 14:
@@ -313,7 +313,7 @@ class SpaceTraderClient:
         return self.parser.list_ships(response)
 
     def purchase_ship(self, ship_type: ShipType, waypoint_symbol: str) -> PurchaseShip | ApiError:
-
+        """Purchase a new ship"""
         payload = {"shipType": ship_type.value, "waypointSymbol": waypoint_symbol}
         response = self.request.api("POST", "/my/ships", payload=payload)
         if "error" in response:
@@ -321,18 +321,21 @@ class SpaceTraderClient:
         return self.parser.purchase_ship(response)
 
     def get_ship(self, ship_symbol: str) -> Ship | ApiError:
+        """Get specifics on specified ship."""
         response = self.request.api("GET", "/my/ships", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_ship(response)
 
     def get_ship_cargo(self, ship_symbol: str) -> Cargo | ApiError:
+        """Get cargo for specified ship."""
         response = self.request.api("GET", "/my/ships/{}/cargo", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_ship_cargo(response)
 
     def orbit_ship(self, ship_symbol: str) -> ShipNav | ApiError:
+        """Move ship from docked status, to orbit."""
         response = self.request.api("POST", "/my/ships/{}/orbit", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -341,6 +344,7 @@ class SpaceTraderClient:
     def ship_refine(
         self, ship_symbol: str, refined_symbol: RefinedGoodSymbol
     ) -> ShipRefine | ApiError:
+        """Refine raw material into refined material"""
         payload = {"produce": refined_symbol.value}
         response = self.request.api(
             "POST", "/my/ships/{}/refine", path_param=ship_symbol, payload=payload
@@ -350,24 +354,28 @@ class SpaceTraderClient:
         return self.parser.ship_refine(response)
 
     def create_chart(self, ship_symbol: str) -> CreateChart | ApiError:
+        """Chart the current waypoint."""
         response = self.request.api("POST", "/my/ships/{}/chart", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.create_chart(response)
 
     def get_ship_cooldown(self, ship_symbol: str) -> Cooldown | ApiError:
+        """Get ship cooldown"""
         response = self.request.api("GET", "/my/ships/{}/cooldown", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_ship_cooldown(response)
 
     def dock_ship(self, ship_symbol: str) -> ShipNav | ApiError:
+        """Move ship from orbiting, to docked."""
         response = self.request.api("POST", "/my/ships/{}/dock", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.orbit_dock_ship(response)
 
     def create_survey(self, ship_symbol: str) -> CreateSurvey | ApiError:
+        """Survey current waypoint."""
         response = self.request.api("POST", "/my/ships/{}/survey", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -376,6 +384,7 @@ class SpaceTraderClient:
     def extract_resources(
         self, ship_symbol: str, survey: Survey | dict | None = None
     ) -> ExtractResources | ApiError:
+        """Extract resources from a waypoint. Able to partially target resources if you provide a survey."""
         endpoint = "/my/ships/{}/extract"
         if survey:
             endpoint += "/survey"
@@ -388,6 +397,7 @@ class SpaceTraderClient:
         return self.parser.extract_resources(response)
 
     def siphon_resources(self, ship_symbol: str) -> ExtractResources | ApiError:
+        """Siphon resources from gas based waypoints. Similar to Extract Resources from Asteroids."""
         response = self.request.api("POST", "/my/ships/{}/extract", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -396,6 +406,7 @@ class SpaceTraderClient:
     def jettison_cargo(
         self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> Cargo | ApiError:
+        """Jettison specified item and amount in cargo to space."""
         payload = {"symbol": trade_symbol.value, "units": units}
         response = self.request.api(
             "POST", "/my/ships/{}/jettison", path_param=ship_symbol, payload=payload
@@ -405,6 +416,7 @@ class SpaceTraderClient:
         return self.parser.transfer_jettison_cargo(response)
 
     def jump_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
+        """Use a Jump Drive and anti-matter to jump a ship to another waypoint."""
         payload = {"waypointSymbol": waypoint_symbol}
         response = self.request.api(
             "POST", "/my/ships/{}/jump", path_param=ship_symbol, payload=payload
@@ -414,6 +426,7 @@ class SpaceTraderClient:
         return self.parser.navigate_jump_warp_ship(response)
 
     def navigate_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
+        """Navigate the ship to another waypoint in the system."""
         payload = {"waypointSymbol": waypoint_symbol}
         response = self.request.api(
             "POST", "/my/ships/{}/navigate", path_param=ship_symbol, payload=payload
@@ -425,6 +438,7 @@ class SpaceTraderClient:
     def patch_ship_nav(
         self, ship_symbol: str, flight_mode: ShipNavFlightMode
     ) -> ShipNav | ApiError:
+        """Update the ship's flight mode."""
         payload = {"flightMode": flight_mode.value}
         response = self.request.api(
             "PATCH", "/my/ships/{}/nav", path_param=ship_symbol, payload=payload
@@ -434,12 +448,14 @@ class SpaceTraderClient:
         return self.parser.get_patch_ship_nav(response)
 
     def get_ship_nav(self, ship_symbol: str) -> ShipNav | ApiError:
+        """Gets the current navigation configuration of the ship."""
         response = self.request.api("GET", "/my/ships/{}/nav", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_patch_ship_nav(response)
 
     def warp_ship(self, ship_symbol: str, waypoint_symbol: str) -> NavigateShip | ApiError:
+        """Use Warp Drive to warp from current waypoint to another."""
         payload = {"waypointSymbol": waypoint_symbol}
         response = self.request.api(
             "POST", "/my/ships/{}/warp", path_param=ship_symbol, payload=payload
@@ -451,6 +467,7 @@ class SpaceTraderClient:
     def sell_cargo(
         self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> BuySellCargo | ApiError:
+        """Sell ship's cargo to market. Market must have item as a import."""
         payload = {"symbol": trade_symbol.value, "units": units}
         response = self.request.api(
             "POST", "/my/ships/{}/sell", path_param=ship_symbol, payload=payload
@@ -460,18 +477,21 @@ class SpaceTraderClient:
         return self.parser.buy_sell_cargo(response)
 
     def scan_systems(self, ship_symbol: str) -> ScanSystems | ApiError:
+        """Scan systems around/connected to the ship's current system."""
         response = self.request.api("POST", "/my/ships/{}/scan/systems", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.scan_systems(response)
 
     def scan_waypoints(self, ship_symbol: str) -> ScanWaypoints | ApiError:
+        """Scan waypoints in the ship's current system."""
         response = self.request.api("POST", "/my/ships/{}/scan/waypoints", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.scan_waypoints(response)
 
     def scan_ships(self, ship_symbol: str) -> ScanShips | ApiError:
+        """Scan ships at the current waypoint."""
         response = self.request.api("POST", "/my/ships/{}/scan/ships", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -480,13 +500,7 @@ class SpaceTraderClient:
     def refuel_ship(
         self, ship_symbol: str, fuel_units: Optional[int], from_cargo: bool = False
     ) -> RefuelShip | ApiError:
-        """
-        Refuel your ship by buying fuel from the local market.
-        Requires the ship to be docked in a waypoint that has the Marketplace trait, and the market
-        must be selling fuel in order to refuel. Each fuel bought from the market replenishes 100
-        units in your ship's fuel. Ships will always be refueled to their frame's maximum fuel
-        capacity when using this action.
-        """
+        """Refuel your ship by buying fuel from the local market or shipyard."""
         payload = {"fuelUnits": fuel_units, "fromCargo": from_cargo}
         response = self.request.api(
             "POST", "/my/ships/{}/refuel", path_param=ship_symbol, payload=payload
@@ -498,6 +512,7 @@ class SpaceTraderClient:
     def purchase_cargo(
         self, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> BuySellCargo | ApiError:
+        """Purchase cargo from a marketplace"""
         payload = {"symbol": trade_symbol.value, "units": units}
         response = self.request.api(
             "POST", "/my/ships/{}/purchase", path_param=ship_symbol, payload=payload
@@ -509,6 +524,7 @@ class SpaceTraderClient:
     def transfer_cargo(
         self, from_ship_symbol: str, trade_symbol: TradeSymbol, units: int, to_ship_symbol: str
     ) -> Cargo | ApiError:
+        """Transfer Cargo from one ship to another. Both ships must be owned by the same agent."""
         payload = {"tradeSymbol": trade_symbol.value, "units": units, "shipSymbol": to_ship_symbol}
         response = self.request.api(
             "POST", "/my/ships/{}/transfer", path_param=from_ship_symbol, payload=payload
@@ -518,6 +534,7 @@ class SpaceTraderClient:
         return self.parser.transfer_jettison_cargo(response)
 
     def negotiate_contract(self, ship_symbol: str) -> Contract | ApiError:
+        """Negotiate a new contract."""
         response = self.request.api(
             "POST", "/my/ships/{}/negotiate/contract", path_param=ship_symbol
         )
@@ -526,12 +543,14 @@ class SpaceTraderClient:
         return self.parser.negotiate_contract(response)
 
     def get_mounts(self, ship_symbol: str) -> GetMounts | ApiError:
+        """Get mounts installed on the specified ship."""
         response = self.request.api("GET", "/my/ships/{}/mounts", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_mounts(response)
 
     def install_mount(self, ship_symbol: str, mount_symbol: str) -> InstallRemoveMount | ApiError:
+        """Install a mount on the specified ship"""
         payload = {"symbol": mount_symbol}
         response = self.request.api(
             "POST", "/my/ships/{}/mounts/install", path_param=ship_symbol, payload=payload
@@ -541,6 +560,7 @@ class SpaceTraderClient:
         return self.parser.install_remove_mount(response)
 
     def remove_mount(self, ship_symbol: str, mount_symbol: str) -> InstallRemoveMount | ApiError:
+        """Uninstall a mount on the specified ship"""
         payload = {"symbol": mount_symbol}
         response = self.request.api(
             "POST", "/my/ships/{}/mounts/remove", path_param=ship_symbol, payload=payload
@@ -550,24 +570,28 @@ class SpaceTraderClient:
         return self.parser.install_remove_mount(response)
 
     def get_ship_scrap_value(self, ship_symbol: str) -> ModificationTransaction | ApiError:
+        """Get the value of the ship if it was scrapped."""
         response = self.request.api("GET", "/my/ships/{}/scrap", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_scrap_ship(response)
 
     def scrap_ship(self, ship_symbol: str) -> ScrapShip | ApiError:
+        """Scrap a ship for credits."""
         response = self.request.api("POST", "/my/ships/{}/scrap", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.scrap_ship(response)
 
     def get_repair_ship_cost(self, ship_symbol: str) -> ModificationTransaction | ApiError:
+        """Get the cost to repair ship in it's current status."""
         response = self.request.api("GET", "/my/ships/{}/repair", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
         return self.parser.get_repair_ship(response)
 
     def repair_ship(self, ship_symbol: str) -> RepairShip | ApiError:
+        """Repair Ship"""
         response = self.request.api("POST", "/my/ships/{}/repair", path_param=ship_symbol)
         if "error" in response:
             return self.parser.error(response)
@@ -580,7 +604,8 @@ class SpaceTraderClient:
     def list_systems(
         self, limit: int = 20, page: int = 1, all_systems: bool = False, confirm_all: bool = True
     ) -> ListSystems | ApiError:
-        """List systems in the game. (Paginated)"""
+        """List systems in the game. (Paginated)
+        Waypoints returned are less detailed than when fetched individually."""
         query = {"limit": 20 if all_systems else limit, "page": page}
         response = self.request.api("GET", "/systems", query_params=query)
         if "error" in response:
@@ -597,7 +622,8 @@ class SpaceTraderClient:
         return self.parser.list_systems(response)
 
     def get_system(self, system_symbol: str) -> System | ApiError:
-        """Get the details of a system."""
+        """Get the details of a system.
+        Waypoints returned are less detailed than when fetched individually."""
         response = self.request.api("GET", "/systems", path_param=system_symbol.upper())
         if "error" in response:
             return self.parser.error(response)
@@ -612,7 +638,7 @@ class SpaceTraderClient:
         waypoint_type: WaypointType | None = None,
         all_waypoints: bool = False,
     ) -> ListWaypoints | ApiError:
-        """List waypoints for specified system. (Paginated)"""
+        """List waypoints for specified system. Able to specify waypoint traits and/or waypoint type (Paginated)"""
         limit = 20 if all_waypoints else limit
         query = {
             "limit": limit,
@@ -656,7 +682,7 @@ class SpaceTraderClient:
         return self.parser.list_waypoints_in_system(response)
 
     def get_waypoint(self, waypoint_symbol: str) -> Waypoint | ApiError:
-        """Get single waypoint_symbol details"""
+        """Get a single waypoint details. More detailed that what is returned when fetching a system."""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -668,7 +694,7 @@ class SpaceTraderClient:
         return self.parser.get_waypoint(response)
 
     def get_market(self, waypoint_symbol: str) -> Market | ApiError:
-        """Get waypoint_symbol market details"""
+        """Get waypoint's' market details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -680,7 +706,7 @@ class SpaceTraderClient:
         return self.parser.get_market(response)
 
     def get_shipyard(self, waypoint_symbol: str) -> Shipyard | ApiError:
-        """Get waypoint_symbol shipyard details"""
+        """Get waypoint's shipyard details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -692,7 +718,7 @@ class SpaceTraderClient:
         return self.parser.get_shipyard(response)
 
     def get_jumpgate(self, waypoint_symbol: str) -> JumpGate | ApiError:
-        """Get waypoint_symbol jumpgate details"""
+        """Get waypoint's jumpgate details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -704,7 +730,7 @@ class SpaceTraderClient:
         return self.parser.get_jump_gate(response)
 
     def get_construction(self, waypoint_symbol: str) -> Construction | ApiError:
-        """Get waypoint_symbol construction details"""
+        """Get waypoint's construction details"""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         response = self.request.api(
             "GET",
@@ -719,7 +745,7 @@ class SpaceTraderClient:
     def supply_construction(
         self, waypoint_symbol: str, ship_symbol: str, trade_symbol: TradeSymbol, units: int
     ) -> SupplyConstruction | ApiError:
-        """Supply waypoint_symbol construction site."""
+        """Supply waypoint's construction site."""
         system_symbol = "-".join(waypoint_symbol.split("-")[:-1])
         payload = {
             "shipSymbol": ship_symbol,
