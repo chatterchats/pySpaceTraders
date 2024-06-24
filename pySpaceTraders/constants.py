@@ -7,11 +7,7 @@ from os.path import isfile
 ######################
 # We get the version from pyproject.toml cause fuck defining it in multiple places.
 
-pyproject_toml_path = "./pyproject.toml"
-if isfile(pyproject_toml_path):
-    with open(pyproject_toml_path, "rb") as f:
-        data = tomllib.load(f)
-        __version__ = data["tool"]["poetry"]["version"]
+__version__ = "0.5.0"
 
 ######################
 # --- Endpoints --- #
