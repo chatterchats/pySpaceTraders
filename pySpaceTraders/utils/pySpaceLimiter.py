@@ -31,7 +31,7 @@ class Limiter:
                 return True
         return False
 
-    def aquire(self):
+    def acquire(self):
         if self.time is None:
             with self.lock:
                 if self.time is None:  # weird but im thinking about an edge case here
@@ -50,7 +50,7 @@ class Limiter:
         def wrapper(*args, **kwargs):
             self.check_reset()
 
-            while not self.aquire():
+            while not self.acquire():
                 if not self.check_reset():
                     self.sleep()
 
@@ -61,7 +61,7 @@ class Limiter:
         return wrapper
 
 
-class BurstyLimiter:
+class BurstLimiter:
     static: Limiter
     burst: Limiter
 
@@ -73,13 +73,14 @@ class BurstyLimiter:
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            global start
             self.static.check_reset()
             self.burst.check_reset()
 
-            while (not self.static.aquire()) and (not self.burst.aquire()):
+            while (not self.static.acquire()) and (not self.burst.acquire()):
                 if not self.static.check_reset() and not self.burst.check_reset():
-                    time.sleep(max(min(self.static.time_to_reset(), self.burst.time_to_reset()) * 0.95, 0))
+                    time.sleep(
+                        max(min(self.static.time_to_reset(), self.burst.time_to_reset()) * 0.95, 0)
+                    )
 
             # print(f"{datetime.utcnow()} ", end="")
             r = func(*args, **kwargs)
