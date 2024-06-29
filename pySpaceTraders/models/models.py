@@ -675,6 +675,7 @@ class ScanWaypoints:
     waypoints: List[Waypoint]
 
 
+@dataclass
 class RegisterNewAgent:
     agent: Agent
     contract: Contract
