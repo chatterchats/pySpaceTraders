@@ -13,7 +13,7 @@ from pySpaceTraders.constants import (
     __version__,
     REQUEST_TYPES,
 )
-from pySpaceTraders.utils.pySpaceLimiter import BurstyLimiter, Limiter
+from pySpaceTraders.utils.pySpaceLimiter import BurstLimiter, Limiter
 
 
 class PySpaceRequest:
@@ -27,8 +27,6 @@ class PySpaceRequest:
 
     :param logging.Logger logger: A logging object used to log information and exceptions.
     :param str server_url: The base URL for the PySpaceTraders API.
-
-
     """
 
     def __init__(self, logger, testing: bool = False):
@@ -38,9 +36,10 @@ class PySpaceRequest:
         :param PySpaceLogger logger: A logging object used to log information and exceptions.
         :param bool testing: Whether launched in testing mode, uses Stoplight api.
         """
+
         server_url = V2_STARTRADERS_URL if not testing else V2_STOPLIGHT_URL
 
-        self.logger = logger if logger is not None else None
+        self.logger = logger
         self.class_id: str = f"pySpaceTraders/{__version__}"
         self.session = httpx.Client(base_url=server_url)
         self.token = ""
@@ -51,12 +50,19 @@ class PySpaceRequest:
                 "Content-Type": "application/json",
             }
         )
+        if testing:
+            self.session.headers.update(
+                {
+                    "Prefer": "",
+                    "Authorization": "Bearer TESTING",
+                }
+            )
 
     def set_token(self, token: str):
         self.token = token
         self.session.headers.update({"Authorization": f"Bearer {self.token}"})
 
-    @BurstyLimiter(Limiter(2, 1.2), Limiter(30, 60.6))
+    @BurstLimiter(Limiter(2, 1.2), Limiter(30, 60.6))
     def api(
         self,
         method: str,
@@ -70,7 +76,7 @@ class PySpaceRequest:
 
         :param str method: `REQUEST_TYPES`
         :param str endpoint:
-        :param str path_param:
+        :param str|list path_param:
         :param dict query_params:
         :param dict payload:
 
@@ -78,35 +84,38 @@ class PySpaceRequest:
         """
         if path_param:
             if "{}" in endpoint:
+                self.logger.debug("Mid URL Path Param Detected.")
                 if isinstance(path_param, str):
+                    self.logger.debug("Provided path param is a str.")
                     endpoint = endpoint.format(*[path_param])
                 else:
+                    self.logger.debug("Provided path param is a list.")
                     endpoint = endpoint.format(*path_param)
-
             else:
+                self.logger.debug("Path Param Provided. Appending to end or url.")
                 endpoint = f"{endpoint}/{path_param}"
 
         if method not in REQUEST_TYPES:
+            self.logger.error("Invalid Request Type")
             return {"405": f"Invalid request method: {method}"}
         else:
             response = self.session.request(
                 method=method, url=endpoint, params=query_params, json=payload if payload else None
             )
 
-            if self.logger:
-                self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
-                self.logger.debug(
-                    f"Path Param: {path_param} | "
-                    f"Query Param: {str(query_params)} | "
-                    f"Payload: {payload}"
-                )
-                self.logger.debug(
-                    f"Constructed URL: {response.url} | Response: {response.status_code}"
-                )
+            self.logger.debug(f"Method: {method} | Endpoint: {endpoint}")
+            self.logger.debug(
+                f"Path Param: {path_param} | "
+                f"Query Param: {str(query_params)} | "
+                f"Payload: {payload}"
+            )
+            self.logger.debug(f"Constructed URL: {response.url} | Response: {response.status_code}")
+            self.logger.debug(f"Response Payload: {response.json()}")
 
             if "application/json" in response.headers.get("Content-Type", ""):
                 return response.json()
             elif "cooldown" in str(response.url):
+                """Cooldown returns a 204 NO CONTENT if the ship doesn't have a cooldown, which is lame. Build a parsable response here."""
                 now = datetime.now()
                 return {
                     "shipSymbol": path_param,
@@ -116,4 +125,5 @@ class PySpaceRequest:
                     + f"{(now.microsecond // 1000):03d}Z",
                 }
             else:
+
                 return response.text
